@@ -288,6 +288,64 @@ body.zen #timerbar button{background:var(--bg3);color:var(--txt);border-color:va
 .rt-chip{display:inline-block;background:var(--bg3);border:1px solid var(--line);color:var(--txt);
   border-radius:8px;padding:4px 9px;font-size:.72rem;font-weight:700;margin:3px 4px 0 0;cursor:pointer}
 .rt-chip.pre{border-color:var(--acc);color:var(--acc2)}
+/* [REFONTE] ===== PROGRESSION SOUPLESSE (barres, niveaux, anneau) ===== */
+.mob-prog{margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mob-prog .rt-meta{flex-shrink:0}
+.mob-bar{flex:1;min-width:120px;height:8px;border-radius:6px;background:rgba(8,6,4,.6);
+  border:1px solid var(--line);overflow:hidden;margin-top:8px}
+.mob-bar span{display:block;height:100%;border-radius:6px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .5s ease}
+.mob-pct{font-family:'Shippori Mincho',serif;font-weight:800;color:var(--acc2);font-size:1.15rem;flex-shrink:0}
+.mob-dots{display:inline-flex;gap:5px;align-items:center;margin-top:5px}
+.mob-dots i{width:9px;height:9px;border-radius:50%;background:rgba(120,110,90,.35);
+  border:1px solid var(--line);display:inline-block}
+.mob-dots i.on{background:var(--acc);border-color:var(--acc2);box-shadow:0 0 6px rgba(168,57,44,.6)}
+.mob-cur{font-size:.74rem;font-weight:800;color:var(--acc2);margin-top:4px;letter-spacing:.3px}
+.mob-cur.done{color:#c08442}
+.mob-lv{border-left:3px solid var(--line)}
+.mob-lv.current{border-left-color:var(--acc2);background:rgba(34,26,18,.85)}
+.mob-lv.done{border-left-color:#c08442;opacity:.92}
+.mob-lv.locked{opacity:.5}
+.mob-st{font-size:.66rem;font-weight:800;letter-spacing:.4px;padding:3px 8px;border-radius:7px;white-space:nowrap}
+.mob-st.done{color:#e7d9b8;background:rgba(176,125,58,.25);border:1px solid #8a6a32}
+.mob-st.cur{color:#f3e9d8;background:var(--acc);border:1px solid var(--acc2)}
+.mob-st.lock{color:var(--dim);background:var(--bg3);border:1px solid var(--line)}
+.mob-goal{margin-top:7px;font-size:.82rem;font-weight:700;color:var(--txt)}
+.mob-pass{margin-top:6px;font-size:.76rem;color:var(--acc2);font-style:italic}
+.mob-ring-n{fill:#ece3cf;font-family:'Shippori Mincho',serif;font-weight:800;font-size:1.5rem}
+.mob-ring-l{fill:#9a9079;font-size:.5rem;letter-spacing:2px}
+.mob-rank{font-family:'Shippori Mincho',serif;font-weight:800;font-size:1.3rem;margin-top:8px;letter-spacing:.5px}
+/* [AJOUT] ===== UNIVERS ABDOS (thème Forge · acier-braise) ===== */
+body.core{--bg:#0b0c0f;--bg2:#121419;--bg3:#1b1f27;--line:#2b313d;
+  --txt:#e9edf2;--dim:#9aa3b2;--faint:#5d6675;
+  --acc:#d8551f;--acc2:#ff8a3d;--good:#5fcf80;--warn:#e6a93f;--bad:#ff5d52;
+  --blue:#56b3c9;--purple:#c98be0}
+body.core{background:#0a0b0e}
+body.core #bgart{filter:none;opacity:.9;animation:none;background-size:cover;background-position:center top}
+body.core #bgveil{background:linear-gradient(180deg,rgba(10,11,14,.5),rgba(10,11,14,.4) 35%,rgba(10,11,14,.85))}
+body.core .mote{display:none}
+body.core::before{background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(216,85,31,.16),transparent 70%);animation:none}
+body.core h1{color:var(--txt)}
+body.core h2{color:var(--acc2)}
+body.core .card{background:rgba(18,20,25,.8);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  border-color:var(--line);box-shadow:0 4px 18px rgba(0,0,0,.45)}
+body.core .hero{background:linear-gradient(135deg,rgba(30,22,14,.85),rgba(14,15,19,.8));border-color:var(--line)}
+body.core nav{background:rgba(9,10,13,.96);border-top:1px solid var(--line)}
+body.core nav button.on{color:var(--acc2)}
+body.core .btn{background:var(--acc);color:#fff;box-shadow:0 0 14px rgba(216,85,31,.35)}
+body.core .btn.ghost{background:var(--bg3);color:var(--txt);border:1px solid var(--line);box-shadow:none}
+body.core .badge{background:var(--bg3);color:var(--dim)}
+body.core .sub,body.core .muted{color:var(--dim)}
+.ab-pat{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:7px;color:#0a0b0e}
+.ab-lvl{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:7px;border:1px solid var(--acc);color:var(--acc2);white-space:nowrap}
+.ab-dose{display:inline-block;margin-top:8px;font-weight:800;color:var(--acc2);font-size:.95rem}
+.ab-num{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--acc2);font-size:.9rem}
+.ab-tip{margin-top:8px;font-size:.8rem;color:var(--txt);background:rgba(216,85,31,.08);border-left:3px solid var(--acc);border-radius:0 8px 8px 0;padding:7px 10px;line-height:1.5}
+.ab-prog{margin-top:7px;font-size:.76rem;color:var(--dim)}
+.ab-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;display:inline-block}
+.choose-core{color:#d8551f;background:linear-gradient(180deg,rgba(216,85,31,.16),rgba(10,10,15,0))}
+.choose-core h2{font-family:'Rajdhani',sans-serif;color:#ffb27d;text-shadow:0 0 18px rgba(255,138,61,.5)}
+.choose-core p,.choose-core .go{color:#e0b59a}
 /* [AJOUT] ===== LECTEUR DE ROUTINE GUIDÉE (ink sombre) ===== */
 #zenplay{position:fixed;inset:0;z-index:150;display:none;flex-direction:column;align-items:center;
   justify-content:center;text-align:center;padding:24px;color:#ddd4c2;
@@ -506,11 +564,12 @@ function load(){
         d.settings.rankMinsV=DEFAULTS.rankMinsV; d.rankIdx=undefined; /* re-baseline silencieux du rang */ }
       else d.settings.rankMins={...DEFAULTS.rankMins,...savedMins};
       d.logs=d.logs||[]; d.mu=d.mu||{}; d.daily=d.daily||{}; d.restDays=d.restDays||{};
+      d.mob=d.mob||{lvl:{}}; d.mob.lvl=d.mob.lvl||{}; // [REFONTE] progression souplesse par étirement
       // [AJOUT] fonds par contexte (migration de l'ancien bgImage unique) + baseline du cycle pour le bilan
       d.settings.bgImages=d.settings.bgImages||{main:d.settings.bgImage||null,rest:null,boss:null};
       if(!d.cycleRef) d.cycleRef={date:d.settings.startDate, bw:d.settings.bw, rms:{...d.settings.rms}};
       return d; } }catch(e){}
-  return {settings:{...DEFAULTS,rms:{...DEFAULTS.rms},bgImages:{main:null,rest:null,boss:null}}, logs:[], mu:{}, daily:{}, restDays:{}, cycleRef:null};
+  return {settings:{...DEFAULTS,rms:{...DEFAULTS.rms},bgImages:{main:null,rest:null,boss:null}}, logs:[], mu:{}, daily:{}, restDays:{}, cycleRef:null, mob:{lvl:{}}};
 }
 function save(){ localStorage.setItem(KEY, JSON.stringify(S)); checkRankUp(); /* [AJOUT] détection montée de rang */ }
 
@@ -774,7 +833,7 @@ const TABS=[
 ];
 let tab='today';
 // [AJOUT] univers de l'app : null = écran de choix · 'lift' = streetlifting · 'mobility' = souplesse
-let appMode=null, mtab='routines', mRoutine=null;
+let appMode=null, mtab='upper', mGroup=null, mEx=null;
 function go(t){ tab=t; render(); window.scrollTo(0,0); }
 function renderNav(){
   $('nav').innerHTML=TABS.map(t=>
@@ -787,6 +846,7 @@ function render(){
   // [AJOUT] aiguillage d'univers
   if(appMode===null){ renderChooser(); return; }
   if(appMode==='mobility'){ renderMobility(); return; }
+  if(appMode==='core'){ renderCore(); return; }
   renderNav();
   // [AJOUT] thème Monarque en S7 + fond contextuel (normal / repos / boss)
   document.body.classList.toggle('monarch', bgSlotFor()==='boss');
@@ -1545,6 +1605,11 @@ const POSE={
  cat:`<circle cx="27" cy="45" r="6" class="head"/><path class="ink" d="M35 50 Q50 61 66 50"/><path class="ink" d="M37 51 L39 82"/><path class="ink" d="M65 51 L66 82"/><path class="floor" d="M12 84 H88"/>`,
  child:`<circle cx="30" cy="75" r="5.5" class="head"/><path class="ink" d="M66 70 L34 76"/><path class="ink" d="M66 70 L70 82 L60 82"/><path class="ink" d="M42 73 L18 80"/><path class="floor" d="M12 84 H88"/>`,
  cobra:`<circle cx="22" cy="49" r="6" class="head"/><path class="ink" d="M74 78 L46 76 Q32 74 28 55"/><path class="ink" d="M31 57 L35 80"/><path class="ink" d="M60 78 L86 80"/><path class="floor" d="M12 84 H88"/>`,
+ crossArm:`<circle cx="52" cy="22" r="6" class="head"/><path class="ink" d="M52 28 L52 60"/><path class="ink" d="M52 60 L46 84"/><path class="ink" d="M52 60 L58 84"/><path class="ink" d="M52 38 L26 44"/><path class="ink" d="M52 46 L34 44"/><path class="floor" d="M18 86 H84"/>`,
+ floorPec:`<path class="floor" d="M12 78 H88"/><circle cx="26" cy="58" r="6" class="head"/><path class="ink" d="M32 60 L72 64"/><path class="ink" d="M40 61 L36 40"/><path class="ink" d="M72 64 L70 80"/><path class="ink" d="M72 64 L82 78"/>`,
+ standHam:`<path class="floor" d="M12 84 H88"/><path class="floor" d="M60 84 V70 H86"/><circle cx="30" cy="30" r="6" class="head"/><path class="ink" d="M30 36 L40 54"/><path class="ink" d="M40 54 L36 84"/><path class="ink" d="M40 54 L72 70"/><path class="ink" d="M33 40 L60 60"/>`,
+ cossack:`<path class="floor" d="M10 84 H90"/><circle cx="42" cy="34" r="6" class="head"/><path class="ink" d="M42 40 L46 60"/><path class="ink" d="M46 60 L32 78 L24 84"/><path class="ink" d="M46 60 L78 80 L86 84"/><path class="ink" d="M42 44 L60 50"/>`,
+ calf:`<path class="floor" d="M14 84 H86"/><path class="floor" d="M82 18 V84"/><circle cx="44" cy="30" r="6" class="head"/><path class="ink" d="M44 36 L50 58"/><path class="ink" d="M50 58 L36 74 L28 84"/><path class="ink" d="M50 58 L66 70 L80 84"/><path class="ink" d="M46 40 L78 30"/>`,
 };
 function pose(id){ return `<svg class="pose" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <circle class="enso" cx="50" cy="50" r="45"/><ellipse class="wash" cx="50" cy="60" rx="36" ry="30"/>
@@ -1591,51 +1656,143 @@ const MOB_EX={
  cobra:{n:'Cobra / Sphinx',pose:'cobra',zone:'Dos & colonne',bilateral:false,
    why:"Contrebalance la position assise/fléchie, ouvre la poitrine et mobilise le dos en extension.",
    how:"Allongé sur le ventre, mains sous les épaules, déroule le buste vers le haut sans forcer le bas du dos. Version douce (sphinx) : appuie sur les avant-bras, épaules basses."},
+ crossArm:{n:'Épaule croisée',pose:'crossArm',zone:'Épaules & poitrine',bilateral:true,
+   why:"Étire l'arrière de l'épaule (deltoïde postérieur) et la coiffe, souvent raides après les tractions et les dips.",
+   how:"Amène un bras tendu en travers de la poitrine, attrape-le au-dessus du coude avec l'autre main et tire doucement vers toi. Garde l'épaule basse, sans la hausser."},
+ floorPec:{n:'Pectoral au sol',pose:'floorPec',zone:'Épaules & poitrine',bilateral:true,
+   why:"Ouvre la poitrine et l'avant de l'épaule en relâchant tout le poids du corps — idéal en récupération.",
+   how:"Allongé sur le ventre, tends un bras sur le côté à 90°, paume au sol. Roule doucement sur ce côté en t'aidant de l'autre main, jusqu'à sentir l'avant de l'épaule et le pec s'ouvrir."},
+ standHam:{n:'Ischios debout (pied surélevé)',pose:'standHam',zone:'Chaîne postérieure',bilateral:true,
+   why:"Étire les ischios sous une légère charge fonctionnelle, dans une position proche du soulevé de terre.",
+   how:"Pose un talon sur une marche basse, jambe tendue, pied fléchi. Penche le buste vers l'avant depuis la hanche, dos droit, jusqu'à sentir l'arrière de la cuisse."},
+ cossack:{n:'Squat cosaque',pose:'cossack',zone:'Hanches & chevilles',bilateral:true,
+   why:"Ouvre les adducteurs et la hanche en charge latérale — excellent pour le squat large et la stabilité.",
+   how:"Pieds très larges. Descends sur une jambe pliée en gardant l'autre tendue, talons au sol, orteils de la jambe tendue vers le haut. Garde le buste le plus droit possible."},
+ calf:{n:'Mollet au mur',pose:'calf',zone:'Hanches & chevilles',bilateral:true,
+   why:"Assouplit les mollets (gastrocnémien et soléaire) qui limitent la flexion de cheville et la profondeur du squat.",
+   how:"Mains au mur, une jambe tendue derrière, talon ancré, pointe vers le mur. Avance le bassin jusqu'à sentir l'arrière de la jambe. Plie ensuite le genou arrière pour cibler le soléaire."},
 };
-const ZONE_ORDER=['Hanches & chevilles','Chaîne postérieure','Épaules & poitrine','Dos & colonne'];
 
-// --- routines (items : {ex, dur en s, side=bilatéral, reps=texte} ) ---
-const MOB_ROUTINES=[
- {id:'wake',em:'🌅',name:'Réveil du Vagabond',focus:'Corps entier · réveil',min:7,
-  when:'Chaque matin, au réveil',
-  desc:"Au lever, pour délier tout le corps avant d'affronter la journée.",
-  items:[{ex:'catCow',dur:40,reps:'8 cycles lents'},{ex:'childPose',dur:45},{ex:'deepSquat',dur:45},
-   {ex:'passthrough',dur:40,reps:'12 passages'},{ex:'cobra',dur:30},{ex:'hamstring',dur:30,side:true}]},
- {id:'prelift',em:'⚔️',name:'Avant le Combat',focus:'Échauffement dynamique',min:5,
-  when:'Juste avant chaque séance de force',
-  desc:"Avant de soulever : prépare hanches, chevilles et épaules à la charge, sans t'assouplir à froid.",
-  items:[{ex:'catCow',dur:30,reps:'8 cycles'},{ex:'ankleWall',dur:25,side:true},{ex:'hipFlexor',dur:30,side:true},
-   {ex:'deepSquat',dur:40},{ex:'passthrough',dur:30,reps:'10 passages'}]},
- {id:'squat',em:'🐉',name:'La Voie du Squat',focus:'Hanches · chevilles · profondeur',min:10,
-  when:'Les jours de squat / soulevé de terre',
-  desc:"Pour descendre profond et stable, talons ancrés au sol. À faire le soir des jours de jambes.",
-  items:[{ex:'ankleWall',dur:30,side:true},{ex:'hipFlexor',dur:40,side:true},{ex:'deepSquat',dur:60},
-   {ex:'butterfly',dur:50},{ex:'pigeon',dur:45,side:true},{ex:'hamstring',dur:40,side:true}]},
- {id:'wings',em:'🦅',name:'Ailes Ouvertes',focus:'Épaules & haut du dos',min:9,
-  when:'Les jours de haut du corps (dips, tractions, muscle-up)',
-  desc:"Libère les épaules pour le verrouillage, le muscle-up et une posture droite.",
-  items:[{ex:'passthrough',dur:45,reps:'12 passages'},{ex:'doorwayPec',dur:40,side:true},
-   {ex:'threadNeedle',dur:35,side:true},{ex:'deadHang',dur:35},{ex:'childPose',dur:45},{ex:'cobra',dur:30}]},
- {id:'evening',em:'🌑',name:'Le Repos du Guerrier',focus:'Étirements longs · récupération',min:11,
-  when:'Le soir, ou ton jour de repos',
-  desc:"Étirements tenus longtemps pour réparer le corps après la bataille et mieux récupérer.",
-  items:[{ex:'childPose',dur:60},{ex:'pigeon',dur:60,side:true},{ex:'butterfly',dur:60},
-   {ex:'hamstring',dur:50,side:true},{ex:'threadNeedle',dur:40,side:true},{ex:'deepSquat',dur:60}]},
-];
-// programme hebdo : routine principale conseillée par jour, calé sur le split streetlifting
-const MOB_WEEK=[
- {d:'Lundi',    s:'Tractions lourdes + Muscle-up',     main:'wings'},
- {d:'Mardi',    s:'Squat lourd + Deadlift technique',  main:'squat'},
- {d:'Mercredi', s:'Dips + Muscle-up',                  main:'wings'},
- {d:'Jeudi',    s:'Deadlift lourd',                    main:'squat'},
- {d:'Vendredi', s:'Dips lourds + Tractions',           main:'wings'},
- {d:'Samedi',   s:'Squat technique + explosivité',     main:'squat'},
- {d:'Dimanche', s:'Repos',                             main:'evening', rest:true},
-];
+/* ===== [REFONTE] Classement par GROUPE MUSCULAIRE + NIVEAUX DE PROGRESSION ===== */
+// Deux régions : Haut du corps / Bas du corps. Chaque région contient des groupes musculaires.
+const REGIONS={
+ upper:{n:'Haut du corps',em:'🔼',sub:'Épaules · pectoraux · dos',
+   intro:"Délie les épaules, ouvre la poitrine et libère la colonne — la base d'un muscle-up propre, d'un dip profond et d'une posture droite.",
+   groups:['epaules','pecs','dos']},
+ lower:{n:'Bas du corps',em:'🔽',sub:'Hanches · ischios · adducteurs · chevilles',
+   intro:"Ouvre les hanches, allonge la chaîne postérieure et débloque les chevilles — la clé d'un squat profond et d'un soulevé de terre solide.",
+   groups:['hanches','ischios','adducteurs','chevilles']},
+};
+const MOB_GROUPS={
+ epaules:{n:'Épaules',em:'🦅',region:'upper',sub:'Amplitude au-dessus de la tête · muscle-up · verrouillage'},
+ pecs:{n:'Pectoraux',em:'🛡️',region:'upper',sub:'Ouverture de la poitrine · posture · dips'},
+ dos:{n:'Dos & colonne',em:'🐉',region:'upper',sub:'Rotation thoracique · extension · décompression'},
+ hanches:{n:'Hanches & fessiers',em:'🔥',region:'lower',sub:'Profondeur de squat · ouverture · fessiers'},
+ ischios:{n:'Ischio-jambiers',em:'⚡',region:'lower',sub:'Chaîne postérieure · soulevé de terre'},
+ adducteurs:{n:'Adducteurs',em:'🌊',region:'lower',sub:'Squat large · écart · intérieur des cuisses'},
+ chevilles:{n:'Chevilles & mollets',em:'🗻',region:'lower',sub:'Flexion de cheville · talons ancrés au sol'},
+};
+// à quel groupe appartient chaque posture
+const MOB_GROUP_OF={
+ passthrough:'epaules', deadHang:'epaules', crossArm:'epaules',
+ doorwayPec:'pecs', floorPec:'pecs',
+ threadNeedle:'dos', catCow:'dos', childPose:'dos', cobra:'dos',
+ deepSquat:'hanches', hipFlexor:'hanches', pigeon:'hanches',
+ hamstring:'ischios', standHam:'ischios',
+ butterfly:'adducteurs', cossack:'adducteurs',
+ ankleWall:'chevilles', calf:'chevilles',
+};
+const GROUP_ORDER=['epaules','pecs','dos','hanches','ischios','adducteurs','chevilles'];
+// 3 niveaux par posture : t=titre, g=objectif (affiché), d=consigne du niveau, pass=critère pour valider, sets/secs=séance guidée
+const MOB_LV={
+ passthrough:[
+  {t:'Fondation',g:'2 × 10 passages',d:"Prise très large (mains aux extrémités du bâton). Bras tendus, passe lentement de devant vers l'arrière sans cambrer le dos.",pass:'10 passages fluides, coudes tendus.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 10 passages',d:"Rapproche les mains de ~10 cm. Marque une pause de 2 s quand le bâton est derrière, épaules basses.",pass:'Passage propre à ~1,5× la largeur d\'épaules.',sets:3,secs:30},
+  {t:'Maîtrise',g:'3 × 8 passages tenus',d:"Prise serrée (~1,2× largeur d'épaules) ou élastique léger. Tiens 3 s en bas derrière le dos.",pass:'Passage complet prise serrée, sans compensation.',sets:3,secs:30}],
+ deadHang:[
+  {t:'Fondation',g:'3 × 20 s',d:"Suspension passive, pieds qui peuvent frôler le sol pour doser le poids. Relâche tout et respire.",pass:'20 s détendu sans lâcher.',sets:3,secs:20},
+  {t:'Développement',g:'3 × 40 s',d:"Suspension complète, pieds décollés. Épaules relâchées, puis légèrement engagées en fin de série.",pass:'40 s en suspension complète.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 60 s',d:"60 s de suspension, ou suspension active (légères tractions d'épaules) en fin de série.",pass:'60 s + transition vers suspension active.',sets:3,secs:60}],
+ crossArm:[
+  {t:'Fondation',g:'2 × 20 s / côté',d:"Bras tendu en travers de la poitrine, tire modérément. Garde l'épaule opposée basse.",pass:'20 s sans hausser l\'épaule.',sets:2,secs:20},
+  {t:'Développement',g:'3 × 30 s / côté',d:"Augmente la traction, descends légèrement le coude vers le bas du corps.",pass:'Coude qui passe la ligne médiane sans douleur.',sets:3,secs:30},
+  {t:'Maîtrise',g:'3 × 40 s / côté',d:"Enchaîne avec l'étirement du triceps (main derrière la nuque) pour l'épaule complète.",pass:'Amplitude complète des deux variantes.',sets:3,secs:40}],
+ doorwayPec:[
+  {t:'Fondation',g:'2 × 30 s / côté',d:"Coude à hauteur d'épaule contre le montant. Avance d'un petit pas jusqu'à une tension douce.",pass:'30 s sans douleur à l\'avant de l\'épaule.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 40 s / côté',d:"Coude un peu plus haut que l'épaule pour cibler le haut du pec. Tourne le buste à l'opposé.",pass:'Ouverture nette sans cambrer le dos.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 45 s / côté',d:"Les deux avant-bras dans l'embrasure (en V), avance le buste pour ouvrir tout le pec d'un coup.",pass:'Buste qui dépasse la ligne des mains, épaules basses.',sets:3,secs:45}],
+ floorPec:[
+  {t:'Fondation',g:'2 × 30 s / côté',d:"Bras à 90° (en T), paume au sol. Roule légèrement sur ce côté, dose avec la main libre.",pass:'30 s détendu.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 40 s / côté',d:"Roule davantage sur le côté, plie la jambe opposée pour t'ancrer.",pass:'Épaule presque à plat sans forcer.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 45 s / côté',d:"Varie l'angle du bras (haut/milieu/bas) pour balayer tout le pec, respiration lente.",pass:'Ouverture complète sur les 3 angles.',sets:3,secs:45}],
+ threadNeedle:[
+  {t:'Fondation',g:'2 × 6 / côté',d:"À quatre pattes, passe le bras sous l'autre, épaule vers le sol. Mouvement lent et contrôlé.",pass:'Épaule qui touche le sol sans douleur.',sets:2,secs:35},
+  {t:'Développement',g:'3 × 8 / côté',d:"Ouvre ensuite en montant le bras vers le plafond, regard qui suit la main, pause 2 s en haut.",pass:'Rotation ample en ouverture.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 10 / côté',d:"Tiens 3 s en fermeture ET en ouverture. Cherche la rotation depuis le haut du dos, pas la taille.",pass:'Contrôle total des deux fins de course.',sets:3,secs:45}],
+ catCow:[
+  {t:'Fondation',g:'8 cycles lents',d:"À quatre pattes, alterne creux (vache) et rond (chat) au rythme du souffle.",pass:'8 cycles fluides.',sets:1,secs:40},
+  {t:'Développement',g:'2 × 10 cycles',d:"Mobilise la colonne vertèbre par vertèbre, amplitude maximale à chaque extrême.",pass:'Mouvement ondulant complet.',sets:2,secs:45},
+  {t:'Maîtrise',g:'2 × 12 + variantes',d:"Ajoute des cercles de bassin et des inclinaisons latérales (la queue cherche l'oreille).",pass:'Mobilité multi-directionnelle.',sets:2,secs:50}],
+ childPose:[
+  {t:'Fondation',g:'3 × 30 s',d:"Assis sur les talons, bras devant, front au sol. Respire dans le dos.",pass:'30 s détendu, fessiers vers les talons.',sets:3,secs:30},
+  {t:'Développement',g:'3 × 45 s',d:"Marche les mains vers la gauche puis la droite pour étirer les flancs et le grand dorsal.",pass:'Étirement latéral des deux côtés.',sets:3,secs:45},
+  {t:'Maîtrise',g:'3 × 60 s',d:"Version épaules : mains surélevées sur un support, poitrine qui descend vers le sol.",pass:'60 s avec ouverture d\'épaules.',sets:3,secs:60}],
+ cobra:[
+  {t:'Fondation',g:'2 × 20 s (sphinx)',d:"Sur les avant-bras (sphinx), épaules basses, sans forcer le bas du dos.",pass:'20 s sans pincement lombaire.',sets:2,secs:20},
+  {t:'Développement',g:'3 × 25 s (cobra bas)',d:"Pousse sur les mains, coudes légèrement fléchis, regard devant, hanches au sol.",pass:'Extension douce et contrôlée.',sets:3,secs:25},
+  {t:'Maîtrise',g:'3 × 30 s (cobra haut)',d:"Bras tendus, extension complète, épaules loin des oreilles. Garde le contrôle.",pass:'Extension complète sans douleur.',sets:3,secs:30}],
+ deepSquat:[
+  {t:'Fondation',g:'3 × 30 s',d:"Tiens-toi à un support (poteau, porte) pour t'asseoir profond, talons au sol.",pass:'30 s talons au sol avec appui léger.',sets:3,secs:30},
+  {t:'Développement',g:'3 × 45 s',d:"Sans appui, coudes qui poussent les genoux vers l'extérieur, dos droit.",pass:'45 s sans appui, talons ancrés.',sets:3,secs:45},
+  {t:'Maîtrise',g:'3 × 60 s + bascules',d:"Tenue 60 s, puis bascules de poids gauche/droite et rotations du buste en position basse.",pass:'Squat profond confortable + mobilité dynamique en bas.',sets:3,secs:60}],
+ hipFlexor:[
+  {t:'Fondation',g:'2 × 30 s / côté',d:"Genou au sol, légère rétroversion du bassin, buste droit.",pass:'30 s, tension à l\'avant de la hanche arrière.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 40 s / côté',d:"Avance la hanche plus loin, lève le bras du côté de la jambe arrière (étirement en croissant).",pass:'Étirement profond psoas + flanc.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 45 s / côté',d:"Attrape le pied arrière (psoas + quadriceps), version couch stretch contre un mur.",pass:'Pied arrière attrapé, bassin neutre.',sets:3,secs:45}],
+ pigeon:[
+  {t:'Fondation',g:'2 × 30 s / côté',d:"Tibia avant en diagonale, buste droit sur les mains. Cale la hanche avec un coussin si besoin.",pass:'30 s, hanches alignées.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 45 s / côté',d:"Tibia plus parallèle au bord du tapis, descends le buste sur les avant-bras.",pass:'Buste sur avant-bras sans basculer.',sets:3,secs:45},
+  {t:'Maîtrise',g:'3 × 60 s / côté',d:"Pigeon complet, front vers le sol, ou version king pigeon (pied arrière attrapé).",pass:'Front au sol, hanche ouverte.',sets:3,secs:60}],
+ hamstring:[
+  {t:'Fondation',g:'2 × 30 s / côté',d:"Assis, une jambe tendue, dos DROIT, penche depuis les hanches. Plie un peu le genou si le dos s'arrondit.",pass:'Mains au tibia, dos droit.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 40 s / côté',d:"Jambe tendue, attrape le pied ou la cheville sans arrondir le dos.",pass:'Mains au pied, dos droit.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 45 s / côté',d:"Buste posé sur la cuisse, ou version debout pied surélevé. Garde le dos plat.",pass:'Buste sur la cuisse, dos plat.',sets:3,secs:45}],
+ standHam:[
+  {t:'Fondation',g:'2 × 30 s / côté',d:"Talon sur une marche basse, légère flexion du genou, dos droit, penche depuis la hanche.",pass:'30 s sans arrondir le dos.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 40 s / côté',d:"Support plus haut, jambe tendue, penche davantage depuis la hanche.",pass:'Buste plus bas, dos plat.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 45 s / côté',d:"Support haut + attrape la pointe du pied (mollet + nerf sciatique).",pass:'Amplitude complète, dos plat.',sets:3,secs:45}],
+ butterfly:[
+  {t:'Fondation',g:'2 × 40 s',d:"Plantes des pieds jointes, laisse les genoux descendre vers le sol, dos droit.",pass:'Genoux qui descendent, dos droit.',sets:2,secs:40},
+  {t:'Développement',g:'3 × 45 s',d:"Rapproche les talons du bassin, penche le buste en avant depuis les hanches.",pass:'Buste incliné, genoux plus bas.',sets:3,secs:45},
+  {t:'Maîtrise',g:'3 × 60 s',d:"Talons proches, poitrine vers le sol, ou grenouille (frog) à quatre pattes genoux écartés.",pass:'Poitrine proche du sol / grenouille tenue.',sets:3,secs:60}],
+ cossack:[
+  {t:'Fondation',g:'2 × 5 / côté',d:"Descente partielle, tiens-toi à un support pour l'équilibre, talon arrière peut décoller.",pass:'5 descentes contrôlées avec appui.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 6 / côté',d:"Descente plus profonde, sans appui, talons au sol, buste le plus droit possible.",pass:'Cuisse parallèle au sol, talons ancrés.',sets:3,secs:35},
+  {t:'Maîtrise',g:'3 × 8 tenus / côté',d:"Cosaque complet tenu 3 s en bas, jambe tendue bien à plat, sans appui.",pass:'Amplitude complète tenue, sans appui.',sets:3,secs:40}],
+ ankleWall:[
+  {t:'Fondation',g:'2 × 8 / côté',d:"Pied à ~10 cm du mur, avance le genou vers le mur sans décoller le talon.",pass:'Genou touche le mur à 10 cm.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 10 / côté',d:"Recule le pied jusqu'à la limite où le genou touche encore, talon au sol.",pass:'Genou au mur à ~12-13 cm.',sets:3,secs:35},
+  {t:'Maîtrise',g:'3 × 10 tenus / côté',d:"À la distance max, tiens 3 s genou au mur, puis ajoute du squat profond lesté léger.",pass:'≥ 13 cm, talon ancré.',sets:3,secs:40}],
+ calf:[
+  {t:'Fondation',g:'2 × 30 s / côté',d:"Mains au mur, jambe arrière tendue, talon au sol, avance le bassin doucement.",pass:'30 s talon au sol, tension au mollet.',sets:2,secs:30},
+  {t:'Développement',g:'3 × 40 s / côté',d:"Recule davantage la jambe, puis fais une 2e série genou fléchi (cible le soléaire).",pass:'Les deux variantes tenues.',sets:3,secs:40},
+  {t:'Maîtrise',g:'3 × 45 s / côté',d:"Pointe du pied surélevée sur une marche, descends le talon sous le niveau (étirement chargé).",pass:'Étirement en charge, amplitude complète.',sets:3,secs:45}],
+};
+// ---- progression sauvegardée : S.mob.lvl[ex] = nb de niveaux validés (0..3) ----
+function mobAch(k){ return Math.max(0,Math.min(3,(S.mob&&S.mob.lvl&&S.mob.lvl[k])||0)); }
+function mobSet(k,n){ if(!S.mob) S.mob={lvl:{}}; if(!S.mob.lvl) S.mob.lvl={}; S.mob.lvl[k]=Math.max(0,Math.min(3,n)); save(); render(); window.scrollTo({top:window.scrollY}); }
+function mobGroupKeys(g){ return GROUP_ORDER.includes(g)?Object.keys(MOB_GROUP_OF).filter(k=>MOB_GROUP_OF[k]===g):[]; }
+function mobPct(keys){ if(!keys.length) return 0; const a=keys.reduce((s,k)=>s+mobAch(k),0); return Math.round(a/(keys.length*3)*100); }
+function mobGroupPct(g){ return mobPct(mobGroupKeys(g)); }
+function mobRegionPct(r){ return mobPct(REGIONS[r].groups.reduce((a,g)=>a.concat(mobGroupKeys(g)),[])); }
+function mobGlobalPct(){ return mobPct(Object.keys(MOB_GROUP_OF)); }
+function mobRank(p){ if(p>=100)return{n:'Maître du Flux 完',c:'#c8543f'}; if(p>=75)return{n:'Corps de Roseau',c:'#c08442'}; if(p>=50)return{n:'Disciple Délié',c:'#b07d3a'}; if(p>=25)return{n:'Apprenti',c:'#9a7d4a'}; return{n:'Corps Raide',c:'#6a6151'}; }
+function mobBar(pct){ return `<div class="mob-bar"><span style="width:${pct}%"></span></div>`; }
+function mobDots(k){ const a=mobAch(k); return `<span class="mob-dots">${[1,2,3].map(i=>`<i class="${i<=a?'on':''}"></i>`).join('')}</span>`; }
 
 /* ---------- écran de choix d'univers ---------- */
 function renderChooser(){
-  document.body.classList.remove('zen','monarch'); document.body.classList.add('chooser');
+  document.body.classList.remove('zen','core','monarch'); document.body.classList.add('chooser');
   $('nav').innerHTML='';
   const c=$('chooser'); c.classList.add('show');
   c.innerHTML=`
@@ -1647,100 +1804,146 @@ function renderChooser(){
    <div class="choose-half choose-zen" onclick="enterMode('mobility')">
      <div class="em">🗡️</div><h2>MOBILITÉ &amp; SOUPLESSE</h2>
      <p>La discipline du Vagabond — délie tes hanches et tes épaules, forge un corps souple et sans entraves.</p>
+     <div class="go">ENTRER ▸</div></div>
+   <div class="choose-sep"></div>
+   <div class="choose-half choose-core" onclick="enterMode('core')">
+     <div class="em">🔥</div><h2>ABDOS &amp; GAINAGE</h2>
+     <p>Forge un tronc d'acier — les meilleurs exos, classés par séance comme le ferait un coach, pour transférer la force.</p>
      <div class="go">ENTRER ▸</div></div>`;
 }
 function enterMode(m){ appMode=m; $('chooser').classList.remove('show'); document.body.classList.remove('chooser');
-  if(m==='lift') document.body.classList.remove('zen');
+  document.body.classList.remove('zen','core');
   render(); window.scrollTo(0,0); }
 function backToChooser(){ appMode=null; ZenPlayer.close(); Timer.stop();
-  document.body.classList.remove('zen','monarch'); render(); window.scrollTo(0,0); }
+  document.body.classList.remove('zen','core','monarch'); render(); window.scrollTo(0,0); }
 
 /* ---------- univers MOBILITÉ ---------- */
-const MTABS=[{id:'routines',ic:'🗡️',label:'Routines'},{id:'week',ic:'📅',label:'Semaine'},{id:'guide',ic:'📖',label:'Guide'},{id:'mode',ic:'⇄',label:'Univers'}];
-function mGo(t){ if(t==='mode'){ backToChooser(); return; } mtab=t; mRoutine=null; render(); window.scrollTo(0,0); }
+const MTABS=[{id:'upper',ic:'🔼',label:'Haut du corps'},{id:'lower',ic:'🔽',label:'Bas du corps'},{id:'progress',ic:'📊',label:'Progression'},{id:'mode',ic:'⇄',label:'Univers'}];
+function mGo(t){ if(t==='mode'){ backToChooser(); return; } mtab=t; mGroup=null; mEx=null; render(); window.scrollTo(0,0); }
+function mOpenGroup(g){ mGroup=g; mEx=null; mtab=MOB_GROUPS[g].region; render(); window.scrollTo(0,0); }
+function mOpenEx(k){ mEx=k; mGroup=MOB_GROUP_OF[k]; mtab=MOB_GROUPS[mGroup].region; render(); window.scrollTo(0,0); }
+function mBack(){ if(mEx){ mEx=null; } else { mGroup=null; } render(); window.scrollTo(0,0); }
 function renderMobility(){
-  document.body.classList.remove('monarch'); document.body.classList.add('zen');
+  document.body.classList.remove('monarch','core'); document.body.classList.add('zen');
   document.body.classList.remove('chooser'); $('chooser').classList.remove('show');
   const bg=$('bgart'); bg.classList.add('custom');
   bg.style.backgroundImage=`url("data:image/svg+xml;utf8,${BG_ZEN.replace(/\n/g,'')}")`;
-  $('nav').innerHTML=MTABS.map(t=>`<button class="${mtab===t.id&&t.id!=='mode'?'on':''}" onclick="mGo('${t.id}')"><span class="ic">${t.ic}</span>${t.label}</button>`).join('');
+  const navTab=(mtab==='upper'||mtab==='lower'||mtab==='progress')?mtab:'upper';
+  $('nav').innerHTML=MTABS.map(t=>`<button class="${navTab===t.id&&t.id!=='mode'?'on':''}" onclick="mGo('${t.id}')"><span class="ic">${t.ic}</span>${t.label}</button>`).join('');
   const a=$('app');
-  if(mtab==='guide') a.innerHTML=guideHTML();
-  else if(mtab==='week') a.innerHTML=weekHTML();
-  else a.innerHTML = mRoutine ? routineDetailHTML(mRoutine) : routinesHTML();
+  if(mtab==='progress') a.innerHTML=mProgressHTML();
+  else if(mEx) a.innerHTML=mExHTML(mEx);
+  else if(mGroup) a.innerHTML=mGroupHTML(mGroup);
+  else a.innerHTML=mRegionHTML(mtab==='lower'?'lower':'upper');
 }
-function routinesHTML(){
-  return `<div class="hero"><h1 class="zen-title">道 · La Voie du Corps</h1>
-   <div class="sub">Mobilité & souplesse — délier le corps que la force a endurci.</div>
-   <div class="ink-quote" style="margin-top:10px">« Un corps raide se brise. Un corps souple encaisse mille coups. »<br><span class="seal">柳</span></div></div>
-   <div class="card tight" onclick="mtab='week';render();window.scrollTo(0,0)" style="cursor:pointer;border-color:var(--acc)">
-     <div class="row"><div class="em" style="font-size:1.4rem">📅</div>
-       <div class="grow"><b class="zen-title">Quand les faire ?</b><div class="rt-meta">Ton programme de mobilité de la semaine →</div></div>
-       <div style="color:var(--acc2);font-size:1.3rem">›</div></div></div>
-   <h2>Les routines</h2>
-   ${MOB_ROUTINES.map(rt=>`<div class="card rt-card" onclick="mRoutine='${rt.id}';render();window.scrollTo(0,0)">
-     <div class="row"><div class="em">${rt.em}</div>
-       <div class="grow"><b class="zen-title" style="font-size:1.05rem">${rt.name}</b>
-         <div class="rt-meta">${rt.focus} · ${rt.items.length} postures · ~${rt.min} min</div>
-         <div class="when-tag">🕑 ${rt.when}</div></div>
-       <div style="color:var(--acc2);font-size:1.3rem">›</div></div>
-     <div class="muted" style="margin-top:6px">${rt.desc}</div></div>`).join('')}
-   <div class="card tight"><div class="muted">🫁 Respire lentement par le nez. Va jusqu'à la tension, jamais la douleur. Tiens, relâche, recommence.</div></div>`;
+/* ---------- vue RÉGION : liste des groupes musculaires ---------- */
+function mRegionHTML(r){
+  const R=REGIONS[r]; const pct=mobRegionPct(r);
+  return `<div class="hero"><h1 class="zen-title">${R.em} ${R.n}</h1>
+   <div class="sub">${R.sub}</div>
+   <div class="muted" style="margin-top:8px">${R.intro}</div>
+   <div class="mob-prog"><div class="rt-meta">Maîtrise de la région</div>${mobBar(pct)}<div class="mob-pct">${pct}%</div></div></div>
+   <h2>Groupes musculaires</h2>
+   ${R.groups.map(g=>{ const G=MOB_GROUPS[g]; const gp=mobGroupPct(g); const n=mobGroupKeys(g).length;
+     return `<div class="card rt-card" onclick="mOpenGroup('${g}')">
+       <div class="row"><div class="em">${G.em}</div>
+         <div class="grow"><b class="zen-title" style="font-size:1.05rem">${G.n}</b>
+           <div class="rt-meta">${G.sub}</div>
+           <div class="rt-meta" style="margin-top:2px">${n} étirements · maîtrise ${gp}%</div></div>
+         <div style="color:var(--acc2);font-size:1.3rem;align-self:center">›</div></div>
+       ${mobBar(gp)}</div>`; }).join('')}
+   <div class="card tight"><div class="muted">🫁 Respire lentement par le nez. Va jusqu'à la tension, jamais la douleur. C'est la régularité qui fait monter ton niveau, pas la force.</div></div>`;
 }
-function weekHTML(){
-  return `<div class="hero"><h1 class="zen-title">📅 Programme de la semaine</h1>
-   <div class="sub">Quelle routine de mobilité faire chaque jour, calée sur ton split streetlifting.</div></div>
-   <div class="card tight"><div class="muted">Chaque jour d'entraînement : <b style="color:var(--acc2)">Avant le Combat</b> en échauffement juste avant de soulever, puis la routine du soir ci-dessous. <b style="color:var(--acc2)">Réveil du Vagabond</b> chaque matin (optionnel, 5 min).</div></div>
-   ${MOB_WEEK.map(w=>{ const rt=MOB_ROUTINES.find(x=>x.id===w.main);
-     return `<div class="card"><div class="row">
-       <div class="grow"><b class="zen-title">${w.d}</b>
-         <div class="rt-meta">${w.rest?'😴 ':''}${w.s}</div></div></div>
-       <div style="margin-top:8px">
-         ${w.rest?'':`<span class="rt-chip pre" onclick="mRoutine='prelift';mtab='routines';render();window.scrollTo(0,0)">⚔️ Avant le Combat</span>`}
-         <span class="rt-chip" onclick="mRoutine='${rt.id}';mtab='routines';render();window.scrollTo(0,0)">${rt.em} ${rt.name}</span>
-       </div></div>`;}).join('')}
-   <div class="card tight"><div class="muted">💡 Ton jour de repos est flexible : où qu'il tombe dans la semaine, fais-y <b style="color:var(--acc2)">Le Repos du Guerrier</b> à la place.</div></div>`;
+/* ---------- vue GROUPE : liste des étirements + niveau actuel ---------- */
+function mGroupHTML(g){
+  const G=MOB_GROUPS[g]; const keys=mobGroupKeys(g); const gp=mobGroupPct(g);
+  return `<div class="row" style="margin:2px 0 10px"><button class="btn ghost small" onclick="mBack()">‹ ${REGIONS[G.region].n}</button></div>
+   <div class="hero"><div class="row"><div class="em" style="font-size:2rem">${G.em}</div>
+     <div class="grow"><h1 class="zen-title">${G.n}</h1><div class="sub">${G.sub}</div></div></div>
+     <div class="mob-prog"><div class="rt-meta">Maîtrise du groupe</div>${mobBar(gp)}<div class="mob-pct">${gp}%</div></div></div>
+   ${keys.map(k=>{ const ex=MOB_EX[k]; const a=mobAch(k);
+     const lab=a>=3?'Maîtrisé ✓':`Niveau ${a+1} · ${MOB_LV[k][a].t}`;
+     return `<div class="card rt-card" onclick="mOpenEx('${k}')">
+       <div class="ex-card"><div class="pose-wrap">${pose(ex.pose)}</div>
+         <div class="grow"><b class="zen-title">${ex.n}</b>
+           <div class="mob-cur ${a>=3?'done':''}">${lab}</div>
+           ${mobDots(k)}
+           <div class="rt-meta" style="margin-top:4px">${ex.bilateral?'À faire des deux côtés':'Posture maintenue'}</div></div>
+         <div style="color:var(--acc2);font-size:1.3rem;align-self:center">›</div></div></div>`; }).join('')}`;
 }
-function routineDetailHTML(id){
-  const rt=MOB_ROUTINES.find(x=>x.id===id); if(!rt) return routinesHTML();
-  const start=`<button class="btn" onclick="ZenPlayer.open('${rt.id}')">▶ Démarrer la routine guidée</button>`;
-  return `<div class="row" style="margin:2px 0 10px"><button class="btn ghost small" onclick="mRoutine=null;render();window.scrollTo(0,0)">‹ Retour</button></div>
-   <div class="hero"><div class="row"><div class="em" style="font-size:2rem">${rt.em}</div>
-     <div class="grow"><h1 class="zen-title">${rt.name}</h1><div class="sub">${rt.focus} · ~${rt.min} min</div></div></div>
-     <div class="when-tag" style="margin-top:8px">🕑 Quand : ${rt.when}</div>
-     <div class="muted" style="margin-top:6px">${rt.desc}</div></div>
-   ${start}
-   ${rt.items.map((it,n)=>{ const ex=MOB_EX[it.ex]; const dur=it.side?`${it.dur}s / côté`:(it.reps?it.reps:`${it.dur}s`);
-     return `<div class="card"><div class="ex-card">
-       <div class="pose-wrap">${pose(ex.pose)}</div>
-       <div class="grow"><b class="zen-title">${n+1}. ${ex.n}</b>
-         <div class="zone-tag">${ex.zone} · ${dur}</div>
-         <div class="muted" style="margin-top:6px"><b>Pourquoi :</b> ${ex.why}</div>
-         <div class="muted" style="margin-top:4px"><b>Comment :</b> ${ex.how}</div></div></div></div>`;}).join('')}
-   ${start}`;
+/* ---------- vue ÉTIREMENT : 3 niveaux de progression ---------- */
+function mExHTML(k){
+  const ex=MOB_EX[k], g=MOB_GROUP_OF[k], G=MOB_GROUPS[g], a=mobAch(k), lv=MOB_LV[k], side=ex.bilateral;
+  const levels=lv.map((L,i)=>{
+    const st=i<a?'done':(i===a?'current':'locked');
+    const chip=st==='done'?`<span class="mob-st done">✓ Validé</span>`
+              :st==='current'?`<span class="mob-st cur">● En cours</span>`
+              :`<span class="mob-st lock">🔒 Verrouillé</span>`;
+    let btns;
+    if(st==='current') btns=`<div class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn small" onclick="ZenPlayer.openEx('${k}',${i})">▶ Séance guidée</button>
+        <button class="btn ghost small" onclick="mobSet('${k}',${i+1})">✓ J'ai atteint ce niveau</button></div>`;
+    else if(st==='done') btns=`<div class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn ghost small" onclick="ZenPlayer.openEx('${k}',${i})">▶ Refaire la séance</button></div>`;
+    else btns=`<div class="muted" style="margin-top:8px;font-size:.78rem">Valide d'abord le niveau ${a+1} pour débloquer celui-ci.</div>`;
+    return `<div class="card mob-lv ${st}">
+      <div class="row"><b class="zen-title">Niveau ${i+1} — ${L.t}</b><div class="grow"></div>${chip}</div>
+      <div class="mob-goal">🎯 Objectif : ${L.g}</div>
+      <div class="muted" style="margin-top:6px">${L.d}</div>
+      <div class="mob-pass">✦ Pour valider : ${L.pass}</div>
+      ${btns}</div>`;
+  }).join('');
+  const undo=a>0?`<div class="card tight"><button class="btn ghost small" onclick="mobSet('${k}',${a-1})">↩ Annuler le dernier niveau validé</button></div>`:'';
+  return `<div class="row" style="margin:2px 0 10px"><button class="btn ghost small" onclick="mBack()">‹ ${G.n}</button></div>
+   <div class="hero"><div class="row"><div class="pose-wrap" style="width:84px">${pose(ex.pose)}</div>
+     <div class="grow"><h1 class="zen-title" style="font-size:1.4rem">${ex.n}</h1>
+       <div class="zone-tag">${G.em} ${G.n}${side?' · des deux côtés':''}</div>
+       <div style="margin-top:6px">${mobDots(k)} <span class="rt-meta">${a}/3 niveaux validés</span></div></div></div>
+     <div class="muted" style="margin-top:8px"><b style="color:var(--acc2)">Pourquoi :</b> ${ex.why}</div>
+     <div class="muted" style="margin-top:4px"><b style="color:var(--acc2)">Comment :</b> ${ex.how}</div></div>
+   <h2>Niveaux de progression</h2>
+   ${levels}
+   ${undo}`;
 }
-function guideHTML(){
-  let h=`<div class="hero"><h1 class="zen-title">📖 Guide des postures</h1>
-    <div class="sub">Chaque étirement expliqué — prends le temps de bien le sentir.</div>
-    <div class="ink-quote" style="margin-top:10px">« Mille fois la même posture ; mille fois la lame s'affûte. »</div></div>`;
-  ZONE_ORDER.forEach(z=>{ const keys=Object.keys(MOB_EX).filter(k=>MOB_EX[k].zone===z); if(!keys.length) return;
-    h+=`<h2>${z}</h2>`;
-    keys.forEach(k=>{ const ex=MOB_EX[k];
-      h+=`<div class="card"><div class="ex-card"><div class="pose-wrap">${pose(ex.pose)}</div>
-        <div class="grow"><b class="zen-title">${ex.n}</b>
-          <div class="zone-tag">${ex.bilateral?'à faire des deux côtés':'maintenu'}</div>
-          <div class="muted" style="margin-top:6px"><b>Pourquoi :</b> ${ex.why}</div>
-          <div class="muted" style="margin-top:4px"><b>Comment :</b> ${ex.how}</div></div></div></div>`; }); });
+/* ---------- vue PROGRESSION : tableau de bord ---------- */
+function mRing(pct,color){
+  const C=2*Math.PI*52, off=(C*(1-pct/100)).toFixed(1);
+  return `<svg width="124" height="124" viewBox="0 0 120 120" class="mob-ring">
+   <circle cx="60" cy="60" r="52" fill="none" stroke="#3a3020" stroke-width="9"/>
+   <circle cx="60" cy="60" r="52" fill="none" stroke="${color}" stroke-width="9" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off}"/>
+   <text x="60" y="56" text-anchor="middle" class="mob-ring-n">${pct}%</text>
+   <text x="60" y="76" text-anchor="middle" class="mob-ring-l">MAÎTRISE</text></svg>`;
+}
+function mProgressHTML(){
+  const gp=mobGlobalPct(), rk=mobRank(gp);
+  let h=`<div class="hero" style="text-align:center"><h1 class="zen-title">📊 Ta progression</h1>
+   <div class="sub">La souplesse se gagne jour après jour. Voici où tu en es.</div>
+   <div style="display:flex;justify-content:center;margin-top:10px">${mRing(gp,rk.c)}</div>
+   <div class="mob-rank" style="color:${rk.c}">${rk.n}</div>
+   <div class="ink-quote" style="margin-top:10px">« Un corps raide se brise. Un corps souple encaisse mille coups. »<br><span class="seal">柳</span></div></div>`;
+  ['upper','lower'].forEach(r=>{ const R=REGIONS[r];
+    h+=`<h2>${R.em} ${R.n} — ${mobRegionPct(r)}%</h2>`;
+    R.groups.forEach(g=>{ const G=MOB_GROUPS[g]; const pc=mobGroupPct(g);
+      const marks=mobGroupKeys(g).map(k=>{const a=mobAch(k);return a>=3?'●':(a>0?'◐':'○');}).join(' ');
+      h+=`<div class="card rt-card" onclick="mOpenGroup('${g}')">
+       <div class="row"><div class="em" style="font-size:1.3rem">${G.em}</div>
+         <div class="grow"><b class="zen-title">${G.n}</b>
+           <div class="rt-meta">${marks} · ${mobGroupKeys(g).length} étirements</div></div>
+         <div class="mob-pct" style="font-size:1rem">${pc}%</div></div>
+       ${mobBar(pc)}</div>`; });
+  });
+  h+=`<div class="card tight"><div class="muted">🎯 Chaque étirement compte 3 niveaux. Valide un niveau dès que tu remplis son critère — ta maîtrise grimpe toute seule. ● maîtrisé · ◐ en cours · ○ à commencer.</div></div>`;
   return h;
 }
 
 /* ---------- lecteur de routine guidée (minuteur zen) ---------- */
 const ZenPlayer={ steps:[], i:0, left:0, total:0, run:false, _iv:null, title:'',
-  open(rid){ const rt=MOB_ROUTINES.find(x=>x.id===rid); if(!rt) return;
-    this.title=rt.name; this.steps=[];
-    rt.items.forEach(it=>{ const ex=MOB_EX[it.ex];
-      if(it.side){ this.steps.push({ex,dur:it.dur,tag:'▷ Côté droit'}); this.steps.push({ex,dur:it.dur,tag:'◁ Côté gauche'}); }
-      else this.steps.push({ex,dur:it.dur,tag:it.reps||''}); });
+  openEx(k,li){ const ex=MOB_EX[k]; const L=MOB_LV[k]&&MOB_LV[k][li]; if(!ex||!L) return;
+    this.title=ex.n+' · Niveau '+(li+1); this.steps=[];
+    for(let s=0;s<L.sets;s++){
+      if(ex.bilateral){ this.steps.push({ex,dur:L.secs,tag:`Série ${s+1}/${L.sets} · ▷ Côté droit`});
+        this.steps.push({ex,dur:L.secs,tag:`Série ${s+1}/${L.sets} · ◁ Côté gauche`}); }
+      else this.steps.push({ex,dur:L.secs,tag:`Série ${s+1}/${L.sets} — ${L.g}`}); }
     this.i=0; $('zenplay').classList.add('show'); this._load(); },
   _load(){ const s=this.steps[this.i]; if(!s){ this._finish(); return; }
     this.total=s.dur; this.left=s.dur; this.run=true;
@@ -1781,6 +1984,192 @@ const ZenPlayer={ steps:[], i:0, left:0, total:0, run:false, _iv:null, title:'',
     g.gain.exponentialRampToValueAtTime(.25,c.currentTime+.05); g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+1.7);
     o.start(); o.stop(c.currentTime+1.8); }catch(e){} }
 };
+
+/* ================================================================
+   [AJOUT] UNIVERS ABDOS & GAINAGE — thème Forge (acier-braise)
+   Les meilleurs exercices de tronc, classés PAR SÉANCE (pas par
+   semaine) et par schéma de mouvement, comme le ferait un coach.
+   ================================================================ */
+const BG_CORE=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 620'>
+<defs><radialGradient id='cg' cx='50%' cy='8%' r='95%'><stop offset='0%' stop-color='%231e1308'/><stop offset='42%' stop-color='%23121319'/><stop offset='100%' stop-color='%23090a0d'/></radialGradient></defs>
+<rect width='400' height='620' fill='url(%23cg)'/>
+<circle cx='200' cy='30' r='150' fill='%23e2622a' opacity='.10'/>
+<circle cx='200' cy='30' r='80' fill='%23ff8a3d' opacity='.08'/></svg>`;
+// schémas de mouvement (la classification d'expert)
+const AB_PATTERNS={
+ antiext:{n:'Anti-extension',c:'#56b3c9',d:"Garder le tronc rigide et le bas du dos plat malgré la charge. Le plus important pour transférer la force au squat, au deadlift et au muscle-up."},
+ flex:{n:'Flexion / compression',c:'#ff8a3d',d:"Rapprocher le buste et le bassin. Construit le « six-pack » et la compression nécessaire au L-sit et au front lever."},
+ rot:{n:'Rotation / obliques',c:'#c98be0',d:"Produire ou résister à la torsion du tronc. Renforce les obliques et stabilise sur les mouvements asymétriques."},
+ ext:{n:'Extension / lombaires',c:'#7fc08a',d:"Renforcer le bas du dos pour équilibrer les abdos et protéger la colonne sous charge lourde."},
+};
+// séances complètes (les exos sont ordonnés du plus lourd/technique au plus simple)
+const AB_SESSIONS=[
+ {id:'s1',em:'🛡️',name:'Séance 1 — Fondations du gainage',focus:'Anti-extension · contrôle · base',level:'Débutant',min:15,
+  intro:"La base : apprendre à verrouiller le tronc. Maîtrise ces gainages avant de passer à la suspension. 2 à 3 tours du circuit, 60–90 s de repos.",
+  ex:[
+   {n:'Hollow body hold',pat:'antiext',dose:'3 × 20–30 s',
+    how:"Sur le dos, bas du dos COLLÉ au sol, bras et jambes tendus et décollés. Plus tu baisses les membres, plus c'est dur.",
+    tip:"C'est LA position de référence du calisthenics. Si le bas du dos décolle, plie les genoux ou monte les bras.",
+    prog:"Genoux pliés → jambes tendues → bras au-dessus de la tête."},
+   {n:'Planche (front plank)',pat:'antiext',dose:'3 × 30–45 s',
+    how:"Sur les avant-bras, corps en ligne droite tête-talons. Serre fessiers et abdos, rentre légèrement le bassin.",
+    tip:"Qualité > durée. 30 s de planche parfaite valent mieux que 2 min avec les fesses en l'air.",
+    prog:"Genoux au sol → planche complète → pieds surélevés / lestée."},
+   {n:'Gainage latéral (side plank)',pat:'rot',dose:'3 × 20–30 s / côté',
+    how:"Sur un avant-bras, corps en ligne sur le côté, hanche bien haute. Ne laisse pas le bassin s'affaisser.",
+    tip:"Indispensable pour des obliques solides et une colonne protégée latéralement.",
+    prog:"Genou au sol → jambes tendues → montées de hanche dynamiques."},
+   {n:'Dead bug',pat:'antiext',dose:'3 × 8 / côté',
+    how:"Sur le dos, bras vers le plafond, genoux à 90°. Tends bras + jambe opposés lentement sans cambrer, puis change.",
+    tip:"Parfait pour apprendre à dissocier bras et jambes en gardant le tronc gainé.",
+    prog:"Talon qui frôle le sol → jambe tendue complète."},
+   {n:'Relevé de genoux suspendu',pat:'flex',dose:'3 × 10–12',
+    how:"Suspendu à la barre, monte les genoux vers la poitrine sans balancer. Contrôle la descente.",
+    tip:"Première marche vers le toes-to-bar. Bascule légèrement le bassin en haut pour vraiment contracter.",
+    prog:"Sur appui (chaise romaine) → suspendu genoux pliés → jambes semi-tendues."},
+  ]},
+ {id:'s2',em:'🔥',name:'Séance 2 — Compression & suspension',focus:'Flexion · barre · transfert tractions',level:'Intermédiaire',min:18,
+  intro:"Le cœur du streetlifting : la force de compression à la barre, qui se transfère direct au muscle-up et au front lever. 3 à 4 tours.",
+  ex:[
+   {n:'Relevé de jambes suspendu',pat:'flex',dose:'4 × 8–12',
+    how:"Suspendu, jambes tendues, monte-les jusqu'à l'horizontale (ou plus) sans élan. Descente lente.",
+    tip:"Si tu balances, c'est trop dur : reviens au relevé de genoux. La rigueur fait tout.",
+    prog:"Genoux → jambes tendues à l'horizontale → toes-to-bar."},
+   {n:'Toes-to-bar',pat:'flex',dose:'3 × 5–8',
+    how:"Suspendu, amène les orteils toucher la barre, jambes tendues, épaules engagées (actives).",
+    tip:"Engage les dorsaux en début de mouvement (comme un début de traction) pour générer la compression.",
+    prog:"Genoux à la barre → jambes tendues → strict, sans balancier."},
+   {n:'Ab wheel rollout (à genoux)',pat:'antiext',dose:'3 × 6–10',
+    how:"À genoux, déroule la roue (ou une barre) loin devant en gardant le bas du dos PLAT, puis reviens en contractant.",
+    tip:"Le meilleur exercice d'anti-extension lesté. Ne descends que jusqu'où tu gardes le dos neutre.",
+    prog:"Amplitude partielle → rollout complet à genoux → debout."},
+   {n:'Hollow rock',pat:'flex',dose:'3 × 12–15',
+    how:"En position hollow, balance-toi d'avant en arrière en gardant le dos arrondi et collé, comme une banane rigide.",
+    tip:"Développe le gainage dynamique et la conscience de la position hollow pour les figures de barre.",
+    prog:"Hold statique → petits rocks → amplitude complète."},
+   {n:'L-sit',pat:'flex',dose:'4 × 10–20 s',
+    how:"Sur deux supports (parallettes, barres, sol), pousse les épaules vers le bas et tends les jambes à l'horizontale.",
+    tip:"Combine force de compression et verrouillage d'épaules — un pilier du streetlifting.",
+    prog:"Pieds au sol → genoux pliés (tuck) → une jambe tendue → L-sit complet."},
+  ]},
+ {id:'s3',em:'🌀',name:'Séance 3 — Obliques & rotation',focus:'Rotation · anti-rotation · obliques',level:'Intermédiaire',min:16,
+  intro:"Des obliques en acier pour stabiliser le tronc sur tout ce qui est asymétrique et protéger le dos. 3 tours du circuit.",
+  ex:[
+   {n:'Essuie-glaces (windshield wipers)',pat:'rot',dose:'3 × 6–8 / côté',
+    how:"Allongé, jambes tendues vers le haut, descends-les d'un côté à l'autre sans toucher le sol et sans décoller les épaules.",
+    tip:"Au sol d'abord ; la version suspendue à la barre est très avancée (voir séance 4).",
+    prog:"Genoux pliés au sol → jambes tendues au sol → suspendu."},
+   {n:'Russian twist',pat:'rot',dose:'3 × 16–20',
+    how:"Assis, buste incliné en arrière, pieds décollés, tourne le buste de gauche à droite (lest optionnel).",
+    tip:"Tourne depuis le buste, pas juste les bras. Garde le dos droit, sans t'arrondir.",
+    prog:"Pieds au sol → pieds décollés → avec disque / médecine-ball."},
+   {n:'Pallof press (élastique)',pat:'rot',dose:'3 × 10 / côté',
+    how:"Élastique ancré sur le côté à hauteur de poitrine, bras tendus devant, résiste à la torsion sans bouger le buste.",
+    tip:"Le meilleur exo d'anti-rotation : tu apprends à NE PAS tourner, ce qui blinde le tronc.",
+    prog:"Élastique léger près de l'ancrage → plus loin / plus tendu."},
+   {n:'Gainage latéral dynamique',pat:'rot',dose:'3 × 10 / côté',
+    how:"En gainage latéral, descends la hanche vers le sol puis remonte-la haut, lentement et contrôlé.",
+    tip:"Ajoute du travail dynamique aux obliques après la version statique de la séance 1.",
+    prog:"Statique → montées de hanche → avec passage du bras sous le corps."},
+   {n:'Relevés obliques suspendus',pat:'rot',dose:'3 × 8 / côté',
+    how:"Suspendu, monte les genoux en diagonale vers une épaule, alterne les côtés, sans élan.",
+    tip:"Combine compression et rotation à la barre — excellent transfert pour le muscle-up explosif.",
+    prog:"Genoux en diagonale → jambes plus tendues."},
+  ]},
+ {id:'s4',em:'🐉',name:'Séance 4 — Force & contrôle (avancé)',focus:'Statique avancé · dragon flag · contrôle total',level:'Avancé',min:20,
+  intro:"Le tronc d'un athlète confirmé. N'aborde cette séance que si les séances 1 à 3 sont solides. 3 à 5 tours, repos complet entre les séries.",
+  ex:[
+   {n:'Dragon flag',pat:'antiext',dose:'4 × 3–6',
+    how:"Allongé sur un banc, agrippe derrière la tête. Décolle tout le corps rigide comme une planche, ne pliant qu'aux épaules. Descente ultra lente.",
+    tip:"L'exo abdo roi (Bruce Lee). Le corps reste parfaitement gainé — aucune flexion de hanche.",
+    prog:"Négatives lentes → tuck → une jambe → dragon flag complet."},
+   {n:'V-sit',pat:'flex',dose:'4 × 8–15 s',
+    how:"Depuis le L-sit, monte les jambes plus haut que l'horizontale en formant un V, épaules toujours basses.",
+    tip:"Compression et force de hanche extrêmes. La suite logique du L-sit.",
+    prog:"L-sit solide → remontée en tuck → V-sit complet."},
+   {n:'Ab wheel debout',pat:'antiext',dose:'3 × 4–8',
+    how:"Rollout depuis debout, déroule jusqu'au sol et reviens, bas du dos toujours neutre. Anti-extension maximale.",
+    tip:"L'un des tests de gainage les plus durs qui existent. Uniquement si le rollout à genoux est facile.",
+    prog:"Rollout à genoux → départ semi-debout → debout complet."},
+   {n:'Essuie-glaces suspendus',pat:'rot',dose:'3 × 4–6 / côté',
+    how:"Suspendu, jambes tendues à la verticale, balaie d'un côté à l'autre avec contrôle total.",
+    tip:"Rotation sous tension maximale à la barre — réservé aux troncs déjà très solides.",
+    prog:"Essuie-glaces au sol → suspendu en tuck → jambes tendues."},
+   {n:'Superman hold',pat:'ext',dose:'3 × 20–30 s',
+    how:"Sur le ventre, décolle simultanément buste, bras et jambes, et tiens. Serre les fessiers et le bas du dos.",
+    tip:"On l'oublie souvent : un bas du dos fort équilibre les abdos et protège la colonne au deadlift.",
+    prog:"Bras le long du corps → bras tendus devant → version dynamique (swimmer)."},
+  ]},
+];
+/* ---------- univers ABDOS ---------- */
+const CTABS=[{id:'sessions',ic:'🔥',label:'Séances'},{id:'method',ic:'🧠',label:'Méthode'},{id:'mode',ic:'⇄',label:'Univers'}];
+let ctab='sessions', cSess=null;
+function cGo(t){ if(t==='mode'){ backToChooser(); return; } ctab=t; cSess=null; render(); window.scrollTo(0,0); }
+function cOpen(id){ cSess=id; render(); window.scrollTo(0,0); }
+function cBack(){ cSess=null; render(); window.scrollTo(0,0); }
+function renderCore(){
+  document.body.classList.remove('zen','monarch'); document.body.classList.add('core');
+  document.body.classList.remove('chooser'); $('chooser').classList.remove('show');
+  const bg=$('bgart'); bg.classList.add('custom');
+  bg.style.backgroundImage=`url("data:image/svg+xml;utf8,${BG_CORE.replace(/\n/g,'')}")`;
+  const navTab=(ctab==='sessions'||ctab==='method')?ctab:'sessions';
+  $('nav').innerHTML=CTABS.map(t=>`<button class="${navTab===t.id&&t.id!=='mode'?'on':''}" onclick="cGo('${t.id}')"><span class="ic">${t.ic}</span>${t.label}</button>`).join('');
+  const a=$('app');
+  if(ctab==='method') a.innerHTML=corePatternsHTML();
+  else if(cSess) a.innerHTML=coreSessionHTML(cSess);
+  else a.innerHTML=coreSessionsHTML();
+}
+function coreSessionsHTML(){
+  return `<div class="hero"><h1>🔥 Abdos & Gainage</h1>
+   <div class="sub">Le tronc, moteur de tout mouvement de force.</div>
+   <div class="muted" style="margin-top:8px">Séances complètes, classées par objectif — pas par semaine. Fais-en 2 à 4 par semaine, après ta séance de force ou un jour à part.</div></div>
+   <div class="card tight" onclick="ctab='method';render();window.scrollTo(0,0)" style="cursor:pointer;border-color:var(--acc)">
+     <div class="row"><div style="font-size:1.4rem">🧠</div>
+       <div class="grow"><b>La méthode d'un coach</b><div class="sub">Comment classer et programmer les abdos →</div></div>
+       <div style="color:var(--acc2);font-size:1.3rem">›</div></div></div>
+   <h2>Les séances</h2>
+   ${AB_SESSIONS.map(s=>`<div class="card rt-card" onclick="cOpen('${s.id}')">
+     <div class="row"><div class="em" style="font-size:1.7rem">${s.em}</div>
+       <div class="grow"><b style="font-size:1.05rem">${s.name}</b>
+         <div class="sub" style="margin-top:2px">${s.focus}</div>
+         <div style="margin-top:7px"><span class="ab-lvl">${s.level}</span> <span class="muted" style="font-size:.76rem">· ${s.ex.length} exos · ~${s.min} min</span></div></div>
+       <div style="color:var(--acc2);font-size:1.3rem;align-self:center">›</div></div></div>`).join('')}
+   <div class="card tight"><div class="muted">⚙️ Un tronc complet = abdos AVANT (flexion), abdos sur les CÔTÉS (obliques) ET bas du dos (extension). Chaque séance ci-dessus est équilibrée dans ce sens.</div></div>`;
+}
+function coreSessionHTML(id){
+  const s=AB_SESSIONS.find(x=>x.id===id); if(!s) return coreSessionsHTML();
+  return `<div class="row" style="margin:2px 0 10px"><button class="btn ghost small" onclick="cBack()">‹ Séances</button></div>
+   <div class="hero"><div class="row"><div class="em" style="font-size:2rem">${s.em}</div>
+     <div class="grow"><h1 style="font-size:1.3rem">${s.name}</h1><div class="sub">${s.focus}</div></div></div>
+     <div style="margin-top:8px"><span class="ab-lvl">${s.level}</span> <span class="muted" style="font-size:.78rem">· ${s.ex.length} exercices · ~${s.min} min</span></div>
+     <div class="muted" style="margin-top:8px">${s.intro}</div></div>
+   ${s.ex.map((e,i)=>{ const P=AB_PATTERNS[e.pat];
+     return `<div class="card"><div class="row" style="align-items:flex-start;gap:10px">
+       <div class="ab-num">${i+1}</div>
+       <div class="grow"><b style="font-size:1.02rem">${e.n}</b>
+         <div style="margin-top:5px"><span class="ab-pat" style="background:${P.c}">${P.n}</span></div>
+         <div class="ab-dose">📋 ${e.dose}</div>
+         <div class="muted" style="margin-top:6px">${e.how}</div>
+         <div class="ab-tip">💡 ${e.tip}</div>
+         <div class="ab-prog">📈 Progression : ${e.prog}</div></div></div></div>`; }).join('')}
+   <div class="card tight"><div class="muted">🫁 Repos 45–90 s entre les séries. Cherche la tension dans le muscle visé, jamais dans le bas du dos. Qualité avant quantité.</div></div>`;
+}
+function corePatternsHTML(){
+  return `<div class="hero"><h1>🧠 La méthode</h1>
+   <div class="sub">Comment un coach de streetlifting classe et programme le travail du tronc.</div></div>
+   <div class="card"><b>Pourquoi des abdos forts ?</b>
+     <div class="muted" style="margin-top:6px">En streetlifting, le tronc transmet la force entre le haut et le bas du corps. Un gainage solide = plus de kilos au squat et au deadlift, un muscle-up plus propre, et une colonne protégée. On ne travaille pas les abdos « pour le show » mais pour transférer la force.</div></div>
+   <h2>Les 4 schémas de mouvement</h2>
+   ${Object.values(AB_PATTERNS).map(P=>`<div class="card"><div class="row" style="gap:9px;align-items:center"><span class="ab-dot" style="background:${P.c}"></span><b>${P.n}</b></div>
+     <div class="muted" style="margin-top:6px">${P.d}</div></div>`).join('')}
+   <h2>Comment programmer</h2>
+   <div class="card"><div class="muted" style="line-height:1.6">
+     <b style="color:var(--acc2)">Fréquence :</b> 2 à 4 séances/semaine. Le tronc récupère vite.<br><br>
+     <b style="color:var(--acc2)">Quand :</b> APRÈS ta séance de force (jamais avant — un tronc fatigué rend le squat et le deadlift moins sûrs), ou sur un jour léger / de repos.<br><br>
+     <b style="color:var(--acc2)">Progression :</b> ajoute des répétitions ou du temps de tenue, puis passe à la variante plus dure (ligne « Progression » de chaque exo). La surcharge progressive s'applique aussi aux abdos.<br><br>
+     <b style="color:var(--acc2)">Équilibre :</b> ne fais pas QUE des crunchs. Mixe flexion, obliques/rotation, anti-extension et un peu d'extension (bas du dos).</div></div>
+   <div class="card tight"><div class="muted">⭐ Conseil d'expert : 3 séries propres et lentes battent 10 séries bâclées. Le tronc répond au contrôle, pas à l'élan.</div></div>`;
+}
 
 /* ================== INIT ================== */
 checkRankUp(); // [AJOUT] mémorise le rang courant au 1ᵉʳ lancement (sans animation)
