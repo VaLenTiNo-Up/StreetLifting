@@ -202,7 +202,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
 @keyframes ruShake{0%,100%{transform:none}20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}
   60%{transform:translate(-4px,-3px)}80%{transform:translate(3px,4px)}}
 body.shake #app{animation:ruShake .45s linear}
-/* [AJOUT] ===== Thème MONARQUE (semaine 7 — boss fight) ===== */
+/* [AJOUT] ===== Thème MONARQUE (semaine de tests — boss fight) ===== */
 body.monarch{--acc:#a01030;--acc2:#FF2D55;--purple:#ff7d92;--blue:#FF9F43}
 body.monarch #bgveil{background:linear-gradient(180deg,rgba(20,4,8,.82) 0%,rgba(20,4,8,.5) 30%,rgba(15,4,8,.45) 60%,rgba(18,3,8,.85) 100%)}
 body.monarch::before{background:radial-gradient(ellipse 60% 40% at 50% -5%,rgba(180,18,46,.3),transparent 70%),
@@ -393,7 +393,8 @@ body.core .sub,body.core .muted{color:var(--dim)}
 <script>
 'use strict';
 /* ================================================================
-   STREETLIFTING TRACKER — Programme 7 semaines, pic en S7
+   STREETLIFTING TRACKER — Bloc 6 semaines · SQ / TR / DI ×3 par semaine
+   + traction 1 bras · affûtage et tests 1RM en S6.
    Toutes les charges sont recalculées depuis tes 1RM (load système
    réel = poids de corps + lest pour dips/tractions/muscle-up).
    Données 100% locales (localStorage). Export/import JSON dans Profil.
@@ -406,150 +407,173 @@ const LIFTS = { // [AJOUT] couleurs recalées sur la palette Solo Leveling
   pull: {label:'Tractions',   short:'TR', type:'w',   color:'#FFD166'},
   mu:   {label:'Muscle-up',   short:'MU', type:'w',   color:'#FF4D6D'},
 };
-const DEFAULTS = {bw:64, rms:{squat:170, dl:185, dips:65, pull:55, mu:2.5},
+const DEFAULTS = {bw:68, rms:{squat:170, dl:185, dips:65, pull:50, mu:2.5},
   startDate:null, restHeavy:180, restAcc:90, sound:true, vibrate:true,
   // [AJOUT] seuils de rang (kg, total compé SQ+TR+DI+MU en LEST SEUL, hors poids de corps) — modifiables dans Profil
   rankMinsV:2,
   rankMins:{E:120, D:170, C:217.5, B:265, A:310, S:355, SS:397.5, SSS:440}};
-// Cibles S7 (gain bas / haut, en kg) — issues du programme
-const TARGETS = {squat:[7.5,12.5], dl:[5,15], dips:[5,10], pull:[2.5,7.5], mu:[10,15]};
+const NW = 6; // durée du bloc — S6 = affûtage + tests
+const BLOCK_LIFTS = ['squat','pull','dips']; // lifts travaillés sur ce bloc (DL et MU en pause)
+// Cibles S6 (gain bas / haut, en kg) — la perte de 2 kg de PDC ajoute ~2 kg de lest à force égale
+const TARGETS = {squat:[7.5,12.5], dips:[2.5,7.5], pull:[2.5,5]};
 
 const DAY_NAMES = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 const BLOCKS = [
-  {weeks:[1,2], name:'Accumulation',    rpe:'RPE 7→8',   vol:'Volume élevé',  int:'70–82%'},
-  {weeks:[3,4], name:'Intensification', rpe:'RPE 8→9',   vol:'Volume moyen',  int:'78–90%'},
-  {weeks:[5,6], name:'Réalisation',     rpe:'RPE 9→9.5', vol:'Volume minimal',int:'85–97%'},
-  {weeks:[7],   name:'Pic & Tests',     rpe:'RPE max',   vol:'Tests 1RM',     int:'100%+'},
+  {weeks:[1,2], name:'Accumulation',      rpe:'RPE 7→8',  vol:'Volume élevé',   int:'70–87%'},
+  {weeks:[3,4], name:'Intensification',   rpe:'RPE 8→9',  vol:'Volume moyen',   int:'77–92%'},
+  {weeks:[5],   name:'Réalisation',       rpe:'RPE 9',    vol:'Volume minimal', int:'80–95%'},
+  {weeks:[6],   name:'Affûtage & Tests',  rpe:'RPE max',  vol:'Tests 1RM',      int:'100%+'},
 ];
 
 /* ---- définition du programme ----
    load: {pct:[semA,semB], lift} → % du 1RM (système pour lests)
          {txt:'...'} texte libre · {rpe:1} charge au RPE · {kg:[a,b]} kg fixes · null
-   heavy:true → repos long après les séries */
+   heavy:true → repos long après les séries
+   Semaine type : chaque lift 3×/sem en ondulation LOURD / VOLUME / LÉGER-VITESSE.
+     Lun SQ lourd + DI vitesse · Mar TR lourd + 1 bras force · Mer DI lourd + SQ pause
+     Jeu 1 bras iso/excentrique + TR volume · Ven SQ volume · Sam DI volume + TR vitesse
+   Coude (épitrochlée) : tirage jamais 2 jours de suite, prise pronation sur les lestées,
+   isométrie fléchisseurs du poignet avant chaque séance de tirage. */
 const T=(name,sets,reps,load,rpe,note,heavy)=>({name,sets,reps,load,rpe,note,heavy:!!heavy});
 
+const ELBOW_ISO=T('Isométrie fléchisseurs poignet',4,'30s',{txt:'haltère, avant-bras posé'},null,'Prépa coude AVANT de tirer : poignet neutre, tiens fort sans bouger. Effet antalgique sur l’épitrochlée.');
 const BLOCK_DAYS = {
   b1:{ // S1–S2 Accumulation
-    intro:"Volume élevé, RPE 7→8. S2 = S1 + un cran d'intensité. La 1ʳᵉ ligne est le top set du jour, les suivantes des back-off.",
+    intro:"Accumulation — volume élevé, RPE 7→8. S2 = S1 + un cran d'intensité. Genouillères SBD sur toutes les séries de squat de travail dès S1, ceinture sur les séries ≥ 80 %. Traction 1 bras : on construit le volume en assistance, jamais à l'échec.",
     days:[
-      {focus:'Tractions lourdes + Muscle-up explosif', ex:[
-        T('Échauffement','—','—',{txt:'mobilité + 3×5 tractions à vide'},6,'5 min épaules/poignets, amplitude complète.'),
-        T('Muscle-up explosif',5,2,{txt:'voir Protocole MU'},7,'Vitesse max au pull, transition active. Toujours FRAIS.'),
-        T('Tractions lestées · top set',1,4,{pct:[78,80],lift:'pull'},8,'Série lourde du jour.',1),
-        T('Tractions lestées · back-off',3,4,{pct:[70,72],lift:'pull'},7,'Tempo 2-0-2, amplitude complète.',1),
-        T('Face pull élastique',3,15,{txt:'élastique'},7,'Santé coiffe des rotateurs.'),
-        T('Curl / tirage léger',3,10,{rpe:1},7,''),
-        T('Dead hang',3,'30s',null,null,'Grip + décompression.')]},
-      {focus:'Squat lourd + Deadlift technique', ex:[
-        T('Échauffement','—','—',{txt:'barre vide 2×10 + montée'},6,'60%×5 / 70%×3 / 78%×2.'),
-        T('Squat · top set',1,4,{pct:[80,82],lift:'squat'},8,'Série lourde. Genoux dans l’axe, profondeur constante.',1),
-        T('Squat · back-off',3,4,{pct:[72,74],lift:'squat'},7,'Même technique, vitesse de remontée.',1),
-        T('Pause squat',3,3,{pct:[65,67],lift:'squat'},7,'3 s en bas, remontée explosive. Contrôle du trou.',1),
-        T('Deadlift technique',4,4,{pct:[65,67.5],lift:'dl'},7,'LÉGER. Ancrer le pattern, dos neutre, pas de fatigue.'),
-        T('Accessoire quadris (fentes/presse)',3,10,{rpe:1},7,''),
-        T('Leg curl',3,12,{rpe:1},7,'Ischio-jambiers.')]},
-      {focus:'Dips volume + Muscle-up technique', ex:[
-        T('Muscle-up technique',6,3,{txt:'assistance (Protocole MU)'},7,'Cibler la transition basse. Reps PROPRES, pas à l’échec.'),
-        T('Dips lestés · top set',1,5,{pct:[78,80],lift:'dips'},8,'Série lourde du jour.',1),
-        T('Dips lestés · back-off',3,5,{pct:[68,70],lift:'dips'},7,'Descente contrôlée, pas de rebond.',1),
-        T('Développé épaules',3,8,{rpe:1},7,'Épaules / verrouillage.'),
-        T('Triceps (extension/barre)',3,12,{rpe:1},7,''),
-        T('Face pull élastique',3,15,{txt:'élastique'},null,'Prévention épaule.')]},
-      {focus:'Deadlift lourd + chaîne postérieure', ex:[
-        T('Échauffement','—','—',{txt:'mobilité hanche + montée'},6,'barre vide / 60%×5 / 72%×3.'),
-        T('Deadlift · top set',1,3,{pct:[76,80],lift:'dl'},8,'S1 : monte jusqu’à un 3RM réel, NOTE la charge et mets à jour ton 1RM dans Profil (1RM ≈ 3RM ÷ 0,93). S2 : applique les %.',1),
-        T('Deadlift · back-off',3,4,{pct:[67.5,70],lift:'dl'},7,'Vitesse de décollage, dos neutre.',1),
-        T('Good morning',3,8,{txt:'léger'},7,'Gainage lombaire, charge modeste.'),
-        T('Hip thrust',3,10,{rpe:1},8,'Fessiers — verrou du lockout.'),
-        T('Leg curl',3,12,{rpe:1},7,'')]},
-      {focus:'Dips lourds + Tractions volume', ex:[
-        T('Dips lestés · top set',1,4,{pct:[80,82],lift:'dips'},8,'Série lourde.',1),
-        T('Dips lestés · back-off',3,4,{pct:[72,74],lift:'dips'},7,'',1),
-        T('Tractions volume',5,5,{pct:[65,67],lift:'pull'},7,'Tempo contrôlé, amplitude totale, scapula engagée.'),
-        T('Pousse horizontale (DC / pompes lestées)',3,8,{rpe:1},7,''),
-        T('Rowing',3,8,{rpe:1},7,'Épaisseur du dos.')]},
-      {focus:'Squat technique + explosivité', ex:[
-        T('Jump squat',5,3,{kg:[50,50]},6,'Vitesse MAX. Développe le RFD (transfert muscle-up).'),
-        T('Squat technique',4,6,{pct:[67,70],lift:'squat'},7,'Profondeur + position, pas de recherche de charge.',1),
-        T('Gainage planche',3,'45s',null,null,''),
-        T('Hollow hold',3,'30s',null,null,'Tension antérieure (utile au muscle-up).')]},
+      {focus:'Squat LOURD + Dips vitesse', ex:[
+        T('Squat · top set',1,4,{pct:[80,82.5],lift:'squat'},8,'Série lourde du jour. Profondeur parallèle (hanche sous le genou), genoux dans l’axe.',1),
+        T('Squat · back-off',3,5,{pct:[72,74],lift:'squat'},7,'Même setup, remontée agressive.',1),
+        T('Dips vitesse',4,3,{pct:[65,67],lift:'dips'},6,'Concentrique EXPLOSIF, descente contrôlée 2 s. Zéro fatigue.'),
+        T('Fentes bulgares',3,8,{rpe:1},7,'Par jambe. Haltères.'),
+        T('Ab wheel',3,8,null,null,'Bassin en rétroversion, pas de cambrure.')]},
+      {focus:'Tractions LOURDES + 1 bras force', ex:[
+        ELBOW_ISO,
+        T('Tractions lestées · top set',1,3,{pct:[85,87],lift:'pull'},8,'Prise pronation, menton au-dessus de la barre, bras tendus en bas.',1),
+        T('Tractions lestées · back-off',3,4,{pct:[77,79],lift:'pull'},7,'Tempo 2-0-1, omoplates engagées avant de tirer.',1),
+        T('Traction 1 bras assistée',5,'2/bras',{txt:'élastique ~20 kg'},7,'5 min après les lestées. Kg = assistance de l’élastique. Bras alterné, 90 s entre chaque bras. Arrête-toi à 2 reps de l’échec.'),
+        T('Rowing haltère',3,8,{rpe:1},7,'Par bras, buste à plat.'),
+        T('Curl marteau',3,10,{rpe:1},7,'Prise neutre = brachial/brachio-radial sans charger l’épitrochlée.')]},
+      {focus:'Dips LOURDS + Squat pause', ex:[
+        T('Dips lestés · top set',1,3,{pct:[86,88],lift:'dips'},8,'Épaule sous le coude en bas, verrouillage complet.',1),
+        T('Dips lestés · back-off',3,5,{pct:[76,78],lift:'dips'},7,'Descente 2 s, pas de rebond.',1),
+        T('Pause squat (3 s)',3,3,{pct:[65,67.5],lift:'squat'},7,'3 s immobile en bas, gainage maintenu, remontée explosive.',1),
+        T('Développé militaire',3,8,{rpe:1},7,'Barre debout, fessiers serrés.'),
+        T('Extension triceps poulie',3,12,{rpe:1},7,''),
+        T('Élévations latérales',3,15,{rpe:1},7,'')]},
+      {focus:'1 bras iso/excentrique + Tractions volume', ex:[
+        ELBOW_ISO,
+        T('Lock-off 1 bras (90°)',4,'10s/bras',null,null,'Coude à 90°, menton à hauteur de la main. Si tu tiens 10 s facilement → assistance doigt de l’autre main retirée / angle plus ouvert (120°).'),
+        T('Négative 1 bras',3,'1/bras',null,null,'5 s de descente contrôlée de haut en bas. Arrête dès que la vitesse t’échappe. Gêne coude > 3/10 → remplace par lock-off.'),
+        T('Tractions volume',4,5,{pct:[72,75],lift:'pull'},7,'Charge modérée, amplitude totale, scapula d’abord.'),
+        T('Tirage horizontal poulie (neutre)',3,10,{rpe:1},7,''),
+        T('Curl poignet excentrique',3,15,{kg:[8,10]},null,'4 s de descente. Rééducation tendon fléchisseurs/pronateurs.'),
+        T('Pronation au marteau',2,12,null,null,'Marteau tenu au bout du manche, rotation lente.')]},
+      {focus:'Squat VOLUME + jambes', ex:[
+        T('Squat volume',4,6,{pct:[70,72.5],lift:'squat'},7.5,'Volume de base de la force. Reps régulières.',1),
+        T('Leg curl',3,10,{rpe:1},7,''),
+        T('Leg extension',3,12,{rpe:1},7,'Contrôle, utile pour le tendon rotulien.'),
+        T('Hip thrust',3,8,{rpe:1},7,''),
+        T('Hollow hold',3,'30s',null,null,'')]},
+      {focus:'Dips VOLUME + Tractions vitesse', ex:[
+        T('Dips volume',4,6,{pct:[72,74],lift:'dips'},7.5,'Amplitude complète.',1),
+        T('Tractions vitesse',4,3,{pct:[62,64],lift:'pull'},6,'Tirage le plus rapide possible. Aucune rep lente.'),
+        T('Face pull',3,15,{txt:'poulie / élastique'},7,'Santé coiffe des rotateurs.'),
+        T('Rotation externe épaule',2,15,{txt:'élastique'},null,'Prévention épaule pour les dips lourds.'),
+        T('L-sit',3,'15s',null,null,'')]},
     ]},
   b2:{ // S3–S4 Intensification
-    intro:"Volume réduit, intensité haute, RPE 8→9. Top sets en doubles/triples lourds. S4 deadlift = volume de récup (on désature le dos). Muscle-up : on charge les singles explosifs.",
+    intro:"Intensification — volume réduit, charges hautes, RPE 8→9. Top sets en doubles lourds. 1 bras : assistance réduite (~15 kg), reps de qualité. Coude : si la gêne monte, coupe d'abord les négatives, jamais les lestées.",
     days:[
-      {focus:'Tractions lourdes + Muscle-up explosif', ex:[
-        T('Muscle-up explosif',4,2,{txt:'+2,5 à +5 kg'},8,'Charge si la technique reste propre. Sinon, reste à vide.'),
-        T('Tractions lestées · top set',1,2,{pct:[88,90],lift:'pull'},8.5,'Double lourd.',1),
-        T('Tractions lestées · back-off',3,2,{pct:[80,82],lift:'pull'},8,'',1),
-        T('Face pull élastique',3,15,{txt:'élastique'},7,''),
-        T('Curl / tirage léger',3,10,{rpe:1},8,'')]},
-      {focus:'Squat lourd + Deadlift technique', ex:[
-        T('Squat · top set',1,2,{pct:[88,90],lift:'squat'},8.5,'Double lourd. Bracing maximal.',1),
-        T('Squat · back-off',3,2,{pct:[80,82],lift:'squat'},8,'',1),
-        T('Deadlift technique',4,3,{pct:[70,72],lift:'dl'},7,'Léger-modéré, vitesse de barre.'),
-        T('Accessoire unilatéral (fentes)',3,8,{rpe:1},8,'Équilibre.'),
-        T('Leg curl',3,10,{rpe:1},8,'')]},
-      {focus:'Dips volume + Muscle-up technique', ex:[
-        T('Muscle-up technique',8,2,{txt:'assistance légère'},8,'Volume en assistance pour rester à ~80%. Qualité de transition.'),
-        T('Dips lestés · top set',1,3,{pct:[82,84],lift:'dips'},8,'Triple lourd.',1),
-        T('Dips lestés · back-off',4,3,{pct:[74,76],lift:'dips'},8,'',1),
-        T('Développé épaules',4,6,{rpe:1},8,''),
-        T('Face pull élastique',3,15,{txt:'élastique'},null,'Prévention.')]},
-      {focus:'Deadlift lourd + chaîne postérieure', ex:[
-        T('Deadlift · top set',1,2,{pct:[85,85],lift:'dl'},8.5,'S3 : double lourd.',1),
-        T('Deadlift · back-off',3,3,{pct:[78,70],lift:'dl'},8,'S3 @78% ; S4 @70% (volume de récup, plus de douceur).',1),
-        T('Hip thrust',4,8,{rpe:1},8,''),
-        T('Good morning',3,8,{rpe:1},7,'')]},
-      {focus:'Dips lourds + Tractions volume', ex:[
-        T('Dips lestés · top set',1,2,{pct:[88,90],lift:'dips'},8.5,'Double lourd.',1),
-        T('Dips lestés · back-off',3,2,{pct:[80,82],lift:'dips'},8,'',1),
-        T('Tractions volume',4,3,{pct:[72,74],lift:'pull'},8,'Qualité, charge modérée.'),
-        T('Pousse horizontale',3,6,{rpe:1},8,''),
-        T('Rowing',3,8,{rpe:1},8,'')]},
-      {focus:'Squat technique + explosivité', ex:[
-        T('Jump squat',5,3,{kg:[50,50]},6,'Vitesse max.'),
-        T('Squat technique',4,3,{pct:[74,74],lift:'squat'},7,'Vitesse de remontée, technique de compétition.',1),
-        T('Gainage',3,'40s',null,null,'')]},
+      {focus:'Squat LOURD + Dips vitesse', ex:[
+        T('Squat · top set',1,2,{pct:[88,90.5],lift:'squat'},8.5,'Double lourd. Bracing maximal, même setup que le test.',1),
+        T('Squat · back-off',3,3,{pct:[80,82.5],lift:'squat'},8,'',1),
+        T('Dips vitesse',4,2,{pct:[68,70],lift:'dips'},6,'Explosif.'),
+        T('Fentes bulgares',3,6,{rpe:1},8,'Par jambe.'),
+        T('Ab wheel',3,8,null,null,'')]},
+      {focus:'Tractions LOURDES + 1 bras force', ex:[
+        ELBOW_ISO,
+        T('Tractions lestées · top set',1,2,{pct:[90,92],lift:'pull'},8.5,'Double lourd.',1),
+        T('Tractions lestées · back-off',3,3,{pct:[83,85],lift:'pull'},8,'',1),
+        T('Traction 1 bras assistée',5,'2/bras',{txt:'élastique ~15 kg'},8,'S3 : 5×2/bras. S4 : 4×2 puis 1 single/bras avec ~10 kg si RPE ≤ 8.'),
+        T('Rowing haltère',3,8,{rpe:1},8,''),
+        T('Curl marteau',3,8,{rpe:1},8,'')]},
+      {focus:'Dips LOURDS + Squat pause', ex:[
+        T('Dips lestés · top set',1,2,{pct:[90,92],lift:'dips'},8.5,'Double lourd.',1),
+        T('Dips lestés · back-off',3,3,{pct:[82,84],lift:'dips'},8,'',1),
+        T('Pause squat (3 s)',3,2,{pct:[70,72.5],lift:'squat'},7,'Contrôle du trou, vitesse en sortie.',1),
+        T('Développé militaire',3,6,{rpe:1},8,''),
+        T('Extension triceps poulie',3,10,{rpe:1},8,'')]},
+      {focus:'1 bras iso/excentrique + Tractions volume', ex:[
+        ELBOW_ISO,
+        T('Lock-off 1 bras (120°)',4,'8s/bras',null,null,'Angle plus ouvert = zone faible de la traction 1 bras. Tiens sans tourner le buste.'),
+        T('Négative 1 bras',4,'1/bras',null,null,'6 s de descente. Même règle coude : gêne > 3/10 → stop.'),
+        T('Tractions volume',4,4,{pct:[76,78],lift:'pull'},7.5,''),
+        T('Tirage horizontal poulie (neutre)',3,10,{rpe:1},8,''),
+        T('Curl poignet excentrique',3,15,{kg:[10,10]},null,'4 s de descente.'),
+        T('Pronation au marteau',2,12,null,null,'')]},
+      {focus:'Squat VOLUME + jambes', ex:[
+        T('Squat volume',4,4,{pct:[77.5,80],lift:'squat'},8,'',1),
+        T('Leg curl',3,10,{rpe:1},8,''),
+        T('Leg extension',3,12,{rpe:1},8,''),
+        T('Hollow hold',3,'30s',null,null,'')]},
+      {focus:'Dips VOLUME + Tractions vitesse', ex:[
+        T('Dips volume',4,4,{pct:[78,80],lift:'dips'},8,'',1),
+        T('Tractions vitesse',4,2,{pct:[65,67],lift:'pull'},6,'Vitesse max.'),
+        T('Face pull',3,15,{txt:'poulie / élastique'},7,''),
+        T('Rotation externe épaule',2,15,{txt:'élastique'},null,''),
+        T('L-sit',3,'15s',null,null,'')]},
     ]},
-  b3:{ // S5–S6 Réalisation
-    intro:"Volume minimal, intensité maximale, RPE 9→9.5. Chaque séance lourde = répétition générale du test. Ven/Sam = maintien très léger (RPE ≤ 6), zéro fatigue. S6 = on touche les 1RM actuels.",
+  b3:{ // S5 Réalisation
+    intro:"Réalisation — singles lourds, volume minimal, RPE 9. Chaque top single = répétition générale du test : même échauffement, même setup, genouillères + ceinture. Accessoires réduits de moitié. Arrête le déficit calorique cette semaine.",
     days:[
-      {focus:'Tractions lourdes + Muscle-up', ex:[
-        T('Muscle-up · singles chargés',4,1,{txt:'+7,5 kg (S5) / +10 kg (S6)'},9,'4 min de repos. Technique de compétition.',1),
-        T('Tractions lestées · top single',1,1,{pct:[94,97],lift:'pull'},9,'Single quasi-maximal.',1),
-        T('Tractions lestées · back-off',2,1,{pct:[88,90],lift:'pull'},8.5,'',1),
-        T('Face pull élastique',2,15,{txt:'élastique'},6,'Volume minimal, santé seulement.')]},
-      {focus:'Squat lourd', ex:[
-        T('Squat · top single',1,1,{pct:[92.5,95.5],lift:'squat'},9,'Single lourd. Setup de compétition identique à chaque fois.',1),
-        T('Squat · back-off',2,1,{pct:[85,88],lift:'squat'},8.5,'',1),
-        T('Accessoires légers',2,8,{rpe:1},7,'Volume réduit.')]},
-      {focus:'Dips + Muscle-up technique', ex:[
-        T('Muscle-up technique',3,2,{txt:'assistance légère (S5) / à vide (S6)'},7,'Maintien du pattern, frais.'),
-        T('Dips lestés · top single',1,1,{pct:[94,97],lift:'dips'},9,'Single quasi-maximal.',1),
-        T('Dips lestés · back-off',2,1,{pct:[88,90],lift:'dips'},8.5,'',1),
-        T('Accessoires légers',2,12,{rpe:1},7,'')]},
-      {focus:'Deadlift lourd', ex:[
-        T('Deadlift · top single',1,1,{pct:[90,92],lift:'dl'},9,'S5 @90% / S6 @92%. Single de compétition.',1),
-        T('Deadlift · back-off',2,1,{pct:[84,86.5],lift:'dl'},8.5,'',1),
-        T('Accessoires légers',2,8,{rpe:1},7,'Volume réduit.')]},
-      {focus:'Maintien léger', ex:[
-        T('Tractions légères',3,3,{pct:[60,60],lift:'pull'},6,'RPE 6 STRICT. Aucune fatigue.'),
-        T('Dips légers',3,3,{pct:[62,62],lift:'dips'},6,'RPE 6 strict.')]},
-      {focus:'Squat léger + mobilité', ex:[
-        T('Squat léger',3,3,{pct:[65,65],lift:'squat'},6,'Vitesse, pattern, zéro fatigue.'),
-        T('Gainage',3,'30s',null,null,'')]},
+      {focus:'Squat LOURD + Dips vitesse', ex:[
+        T('Squat · top single',1,1,{pct:[93,93],lift:'squat'},9,'Single de compétition. Note la vitesse : c’est ton repère pour l’ouverture.',1),
+        T('Squat · back-off',2,2,{pct:[85,85],lift:'squat'},8,'',1),
+        T('Dips vitesse',3,2,{pct:[67,67],lift:'dips'},6,'')]},
+      {focus:'Tractions LOURDES + 1 bras force', ex:[
+        ELBOW_ISO,
+        T('Tractions lestées · top single',1,1,{pct:[95,95],lift:'pull'},9,'Single quasi-max.',1),
+        T('Tractions lestées · back-off',2,2,{pct:[87,87],lift:'pull'},8,'',1),
+        T('Traction 1 bras assistée · singles',4,'1/bras',{txt:'élastique ~10 kg'},8.5,'3 min entre chaque bras. Qualité parfaite.')]},
+      {focus:'Dips LOURDS + Squat léger', ex:[
+        T('Dips lestés · top single',1,1,{pct:[95,95],lift:'dips'},9,'Single quasi-max.',1),
+        T('Dips lestés · back-off',2,2,{pct:[87,87],lift:'dips'},8,'',1),
+        T('Squat léger',3,2,{pct:[70,70],lift:'squat'},6,'Sans pause. Vitesse.'),
+        T('Extension triceps poulie',2,10,{rpe:1},7,'')]},
+      {focus:'1 bras isométrie + Tractions volume', ex:[
+        ELBOW_ISO,
+        T('Lock-off 1 bras (90° + 120°)',3,'8s/bras',null,null,'Pas de négatives cette semaine : on garde le coude frais pour les tests.'),
+        T('Tractions volume',3,3,{pct:[80,80],lift:'pull'},8,''),
+        T('Tirage horizontal poulie (neutre)',2,10,{rpe:1},7,'')]},
+      {focus:'Squat VOLUME (réduit)', ex:[
+        T('Squat volume',3,3,{pct:[80,80],lift:'squat'},7.5,'',1),
+        T('Leg curl',2,10,{rpe:1},7,''),
+        T('Hollow hold',2,'30s',null,null,'')]},
+      {focus:'Dips VOLUME (réduit) + Tractions vitesse', ex:[
+        T('Dips volume',3,3,{pct:[82,82],lift:'dips'},8,'',1),
+        T('Tractions vitesse',3,2,{pct:[65,65],lift:'pull'},6,''),
+        T('Face pull',2,15,{txt:'poulie / élastique'},null,'')]},
     ]},
 };
-// S7 — tests étalés : [jour, lift testé ou null=repos, note]
-const WEEK7 = [
-  {lift:'mu',   note:'FRAIS après le repos du dimanche. Mouvement technique = à tester en 1ᵉʳ.'},
-  {lift:'squat',note:'Échauffe longuement hanches/chevilles. Ceinture si tu en utilises.'},
-  {lift:'dips', note:'Pousse haute, aucune interférence avec le squat de la veille.'},
-  {lift:'pull', note:'Tirage haut. Grip frais, magnésie.'},
-  {lift:null,   note:'REPOS — récupération SNC complète avant le deadlift. Mobilité légère uniquement.'},
-  {lift:'dl',   note:'Coût SNC le plus élevé → testé après un jour OFF, en fin de semaine.'},
+// S6 — affûtage + tests, dans l'ordre des séances : {day} séance de rappel · {lift} test 1RM · {lift:null} repos
+const TEST_WEEK = [
+  {day:{focus:'Rappel Squat + Dips', ex:[
+    T('Squat · rappel',1,1,{pct:[90,90],lift:'squat'},7,'Doit sortir VITE. Genouillères + ceinture comme au test.',1),
+    T('Squat · back-off',2,2,{pct:[75,75],lift:'squat'},6,'',1),
+    T('Dips · rappel',2,2,{pct:[80,80],lift:'dips'},6,'Vitesse, pas de fatigue.')]}},
+  {day:{focus:'Rappel Tractions + test 1 bras', ex:[
+    ELBOW_ISO,
+    T('Tractions · rappel',1,1,{pct:[88,88],lift:'pull'},7,'',1),
+    T('Tractions · back-off',2,2,{pct:[75,75],lift:'pull'},6,''),
+    T('TEST traction 1 bras',3,'1/bras',{txt:'élastique le + léger possible'},9,'Descends d’élastique à chaque essai réussi. Note l’assistance (kg) de la meilleure rep propre de chaque bras. Max 3 essais/bras.')]}},
+  {lift:null, note:'REPOS — mobilité légère hanches/épaules, marche. Mange à maintenance, dors 8 h.'},
+  {lift:'squat', note:'Échauffe longuement hanches/chevilles. Genouillères SBD + ceinture.'},
+  {lift:'pull',  note:'Grip frais, magnésie. Coude chaud : isométrie poignet avant l’échauffement.'},
+  {lift:'dips',  note:'Dernier test : vide le réservoir.'},
 ];
-const ATTEMPT_PCTS = [92,97,103];
+const ATTEMPT_PCTS = [91,97,103];
+BLOCK_DAYS.b4={intro:"Affûtage — volume coupé, intensité gardée. Les rappels doivent sortir vite et facilement. Calories à maintenance toute la semaine.", days:TEST_WEEK.map(t=>t.day||null)};
 
 /* ================== ÉTAT ================== */
 const KEY='sl_app_v1';
@@ -563,13 +587,13 @@ function load(){
       if(savedV!==DEFAULTS.rankMinsV){ d.settings.rankMins={...DEFAULTS.rankMins};
         d.settings.rankMinsV=DEFAULTS.rankMinsV; d.rankIdx=undefined; /* re-baseline silencieux du rang */ }
       else d.settings.rankMins={...DEFAULTS.rankMins,...savedMins};
-      d.logs=d.logs||[]; d.mu=d.mu||{}; d.daily=d.daily||{}; d.restDays=d.restDays||{};
+      d.logs=d.logs||[]; d.mu=d.mu||{}; d.oap=d.oap||{}; d.daily=d.daily||{}; d.restDays=d.restDays||{};
       d.mob=d.mob||{lvl:{}}; d.mob.lvl=d.mob.lvl||{}; // [REFONTE] progression souplesse par étirement
       // [AJOUT] fonds par contexte (migration de l'ancien bgImage unique) + baseline du cycle pour le bilan
       d.settings.bgImages=d.settings.bgImages||{main:d.settings.bgImage||null,rest:null,boss:null};
       if(!d.cycleRef) d.cycleRef={date:d.settings.startDate, bw:d.settings.bw, rms:{...d.settings.rms}};
       return d; } }catch(e){}
-  return {settings:{...DEFAULTS,rms:{...DEFAULTS.rms},bgImages:{main:null,rest:null,boss:null}}, logs:[], mu:{}, daily:{}, restDays:{}, cycleRef:null, mob:{lvl:{}}};
+  return {settings:{...DEFAULTS,rms:{...DEFAULTS.rms},bgImages:{main:null,rest:null,boss:null}}, logs:[], mu:{}, oap:{}, daily:{}, restDays:{}, cycleRef:null, mob:{lvl:{}}};
 }
 function save(){ localStorage.setItem(KEY, JSON.stringify(S)); checkRankUp(); /* [AJOUT] détection montée de rang */ }
 
@@ -705,13 +729,13 @@ const BG_SVG=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 540'>
 <path d='M120 250 L100 330 L130 320 L108 420' fill='none' stroke='%239D50E0' stroke-width='2.5' opacity='.5' filter='url(%23b)'/>
 <path d='M286 270 L300 340 L274 334 L296 430' fill='none' stroke='%2300D4FF' stroke-width='2' opacity='.4' filter='url(%23b)'/>
 </svg>`;
-// [AJOUT] fond selon le contexte : normal / jour de repos / S7 boss fight.
+// [AJOUT] fond selon le contexte : normal / jour de repos / semaine de tests boss fight.
 // Image Jin-Woo embarquée (BG_JINWOO, injectée en fin de script) par défaut sur tous les contextes.
-const BG_SLOTS={main:'🏋️ Normal', rest:'😴 Jour de repos', boss:'⚔️ Semaine 7 — Boss'};
+const BG_SLOTS={main:'🏋️ Normal', rest:'😴 Jour de repos', boss:'⚔️ Semaine de tests — Boss'};
 function bgSlotFor(){
   if(tab==='today'){
-    const w=view.week ?? Math.min(currentWeek(),7), d=view.day ?? todayDow();
-    if(w===7) return 'boss';
+    const w=view.week ?? Math.min(currentWeek(),NW), d=view.day ?? todayDow();
+    if(w===NW) return 'boss';
     if(d===restDayOf(w)) return 'rest';
   }
   return 'main';
@@ -769,8 +793,12 @@ function e1rm(w,reps,rpe){
   const tot = reps + Math.max(0, 10-(rpe||10));
   return tot<=1 ? w : w*(1+tot/30);
 }
-function weekOf(b){ return BLOCKS.find(x=>x.weeks.includes(b)); }
-function blockKey(w){ return w<=2?'b1':w<=4?'b2':w<=6?'b3':'b4'; }
+function weekOf(b){ return BLOCKS.find(x=>x.weeks.includes(Math.min(b,NW))); }
+function blockKey(w){ return w<=2?'b1':w<=4?'b2':w<NW?'b3':'b4'; }
+const WEEK_NUMS=Array.from({length:NW},(_,i)=>i+1);
+// [AJOUT] nouveau cycle : baseline du bilan + on repart sans brouillons ni jours de repos de l'ancien cycle
+function newCycle(date){ S.settings.startDate=date; S.cycleRef={date, bw:S.settings.bw, rms:{...S.settings.rms}};
+  S._drafts={}; S.restDays={}; save(); }
 function readiness(sleep,fat){ return Math.max(0,Math.min(10, Math.round(sleep*(6-fat)*0.3*10)/10)); }
 
 function currentWeek(){
@@ -788,7 +816,7 @@ function setRestDay(w,d){ S.restDays[w]=d; save(); render();
 function weekFromDate(dt){ const sd=S.settings.startDate; if(!sd) return 0;
   return Math.floor((stripT(dt)-stripT(new Date(sd)))/(864e5*7))+1; }
 function isRestDate(dt){ const w=weekFromDate(dt);
-  if(w<1||w>7) return dt.getDay()===0; // hors cycle : dimanche par défaut
+  if(w<1||w>NW) return dt.getDay()===0; // hors cycle : dimanche par défaut
   return ((dt.getDay()+6)%7)===restDayOf(w); }
 
 /* ================== UI HELPERS ================== */
@@ -828,7 +856,7 @@ const TABS=[
   {id:'today', ic:'🏋️', label:'Séance'},
   {id:'plan',  ic:'📅', label:'Programme'},
   {id:'prog',  ic:'📈', label:'Progrès'},
-  {id:'mu',    ic:'🤸', label:'Muscle-up'},
+  {id:'oap',   ic:'💪', label:'1 bras'},
   {id:'me',    ic:'⚙️', label:'Profil'},
 ];
 let tab='today';
@@ -848,7 +876,7 @@ function render(){
   if(appMode==='mobility'){ renderMobility(); return; }
   if(appMode==='core'){ renderCore(); return; }
   renderNav();
-  // [AJOUT] thème Monarque en S7 + fond contextuel (normal / repos / boss)
+  // [AJOUT] thème Monarque en semaine de tests + fond contextuel (normal / repos / boss)
   document.body.classList.toggle('monarch', bgSlotFor()==='boss');
   applyBg();
   const a=$('app');
@@ -856,14 +884,14 @@ function render(){
   if(tab==='today') a.innerHTML=todayHTML();
   else if(tab==='plan') a.innerHTML=planHTML();
   else if(tab==='prog'){ a.innerHTML=progHTML(); setTimeout(drawCharts,0); }
-  else if(tab==='mu') a.innerHTML=muHTML();
+  else if(tab==='oap') a.innerHTML=oapHTML();
   else if(tab==='me') a.innerHTML=meHTML();
 }
 
 function setupHTML(){
   const s=S.settings;
   return `<div class="hero"><h1>🏋️ Streetlifting Tracker</h1>
-  <div class="sub">Programme 7 semaines · pic en S7 · charges auto-calculées sur ton load système réel.</div></div>
+  <div class="sub">Bloc 6 semaines · tests en S6 · charges auto-calculées sur ton load système réel.</div></div>
   <div class="card">
     <h2 style="margin-top:0">Tes données de départ</h2>
     <label>Poids de corps (kg)</label><input id="su-bw" type="number" step="0.5" value="${s.bw}">
@@ -878,38 +906,38 @@ function nextMonday(){ const d=new Date(); const off=(8-d.getDay())%7; d.setDate
 function finishSetup(){
   const s=S.settings; s.bw=+$('su-bw').value||64;
   Object.keys(LIFTS).forEach(k=>s.rms[k]=+$('su-'+k).value||0);
-  s.startDate=$('su-date').value||nextMonday();
-  S.cycleRef={date:s.startDate, bw:s.bw, rms:{...s.rms}}; // [AJOUT] baseline du bilan de cycle
-  save(); render();
+  newCycle($('su-date').value||nextMonday());
+  render();
 }
 
 function todayHTML(){
-  const w = view.week ?? Math.min(currentWeek(),7);
+  const w = view.week ?? Math.min(currentWeek(),NW);
   const d = view.day ?? todayDow();
   const cw=currentWeek();
   let head=rankHudHTML()+ // [AJOUT] HUD rang + streak en haut de l'écran d'accueil
   `<div class="hero"><div class="row"><div class="grow"><h1>Semaine ${w} · ${DAY_NAMES[d]}</h1>
-    <div class="sub">${esc(weekOf(Math.min(w,7)).name)} — ${weekOf(Math.min(w,7)).rpe} · ${weekOf(Math.min(w,7)).vol}</div></div>
-    <span class="badge acc">${cw>7?'cycle fini':'S'+Math.min(cw,7)+' en cours'}</span></div>
-    <div class="prog-track"><div class="prog-fill" style="width:${Math.min(w,7)/7*100}%"></div></div>
+    <div class="sub">${esc(weekOf(w).name)} — ${weekOf(w).rpe} · ${weekOf(w).vol}</div></div>
+    <span class="badge acc">${cw>NW?'cycle fini':'S'+Math.min(cw,NW)+' en cours'}</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:${w/NW*100}%"></div></div>
     <div class="chips" style="margin-bottom:0">
-      ${[1,2,3,4,5,6,7].map(i=>`<div class="chip ${i===w?'on':''}" onclick="view.week=${i};render()">S${i}</div>`).join('')}
+      ${WEEK_NUMS.map(i=>`<div class="chip ${i===w?'on':''}" onclick="view.week=${i};render()">S${i}</div>`).join('')}
     </div>
     <div class="chips" style="margin-bottom:0">
       ${DAY_NAMES.map((n,i)=>`<div class="chip ${i===d?'on':''}" onclick="view.day=${i};render()">${n.slice(0,3)}</div>`).join('')}
     </div></div>`;
-  if(w===7) head+=`<div class="boss-banner"><b>⚔️ BOSS FIGHT — SEMAINE DU MONARQUE</b>
+  if(w===NW) head+=`<div class="boss-banner"><b>⚔️ BOSS FIGHT — SEMAINE DU MONARQUE</b>
     <div class="sub" style="margin-top:4px">« Montre au Système de quoi tu es capable. Chaque single est un boss. »</div></div>`;
-  if(cw>7 && view.week===null)
+  if(cw>NW && view.week===null)
     head+=`<div class="card" style="border-color:var(--good)"><b style="color:var(--good)">🎉 Cycle terminé !</b>
-    <div class="muted" style="margin-top:4px">Reporte tes nouveaux 1RM dans Profil et change la date de début pour relancer un cycle. Si 2 tests sur 5 ont échoué, prends une semaine de deload complète d'abord.</div>
+    <div class="muted" style="margin-top:4px">Reporte tes nouveaux 1RM dans Profil et change la date de début pour relancer un cycle. Si 2 tests sur 3 ont échoué, prends une semaine de deload complète d'abord.</div>
     <button class="btn small" style="margin-top:10px" onclick="progSub='bilan';go('prog')">🏁 Voir mon bilan de cycle</button></div>`;
   return head + sessionHTML(w,d);
 }
 
 function draftKey(w,d){ return `${w}-${d}`; }
 function getDraft(w,d){ S._drafts=S._drafts||{}; return S._drafts[draftKey(w,d)]; }
-function logFor(w,d){ return S.logs.find(l=>l.week===w&&l.day===d); }
+function inCycle(l){ const sd=S.settings.startDate; return !sd || l.date>=sd; } // logs du cycle en cours uniquement
+function logFor(w,d){ return S.logs.find(l=>l.week===w&&l.day===d&&inCycle(l)); }
 
 function sessionHTML(w,d){
   // [AJOUT] repos flexible : le jour de repos de la semaine est celui que TU choisis (défaut dimanche)
@@ -918,8 +946,8 @@ function sessionHTML(w,d){
     <div class="muted" style="margin-top:6px">La force se construit pendant la récupération. Mange, dors, marche.</div>
     ${dailyHTML()}
     <button class="btn ghost" style="margin-top:12px" onclick="if(confirm('Finalement t\\'entraîner aujourd\\'hui ? Le repos repassera au dimanche (tu pourras le redéplacer).')){setRestDay(${w},6)}">↺ Finalement je m'entraîne — repos remis au dimanche</button></div>`;
-  if(w===7) return testDayHTML(d);
   const bk=blockKey(w), blk=BLOCK_DAYS[bk], wkIdx=(w-1)%2, day=blk.days[progDayIdx(w,d)];
+  if(!day) return testDayHTML(d);
   const logged=logFor(w,d);
   const draft=ensureDraft(w,d,day,wkIdx);
   let h=`<div class="card tight"><div class="muted">${esc(blk.intro)}</div></div>`;
@@ -1022,30 +1050,32 @@ function lastPerf(name,w,d){
   return null;
 }
 
-/* ---- S7 : journées de test ---- */
+/* ---- S6 : journées de test ---- */
 function testDayHTML(d){
-  const t=WEEK7[progDayIdx(7,d)]; // [AJOUT] décalage selon le jour de repos choisi
+  const t=TEST_WEEK[progDayIdx(NW,d)]; // [AJOUT] décalage selon le jour de repos choisi
   if(!t.lift) return `<div class="card" style="text-align:center;padding:28px"><div style="font-size:2rem">🧘</div>
     <b>${esc(t.note.split('—')[0])}</b><div class="muted" style="margin-top:6px">${esc(t.note)}</div>${dailyHTML()}</div>`;
   const lift=t.lift, rm=S.settings.rms[lift];
-  const w=7, day={focus:'TEST 1RM — '+LIFTS[lift].label, ex:[]};
+  const w=NW, day={focus:'TEST 1RM — '+LIFTS[lift].label, ex:[]};
   const att=ATTEMPT_PCTS.map((p,i)=>{
     const L=calcLoad(lift,p);
-    return T(['Ouverture (~92%)','2ᵉ essai (~97%)','3ᵉ essai / PR (~103%)'][i],1,1,{pct:[p,p],lift},[8,9.5,10][i],
-      i===0?'Échauffement progressif avant : monte par paliers, singles rapides.':i===2?'Le PR. 3–5 min de repos avant. Filme-toi.':'',1);
+    return T([`Ouverture (~${p}%)`,`2ᵉ essai (~${p}%)`,`3ᵉ essai / PR (~${p}%)`][i],1,1,{pct:[p,p],lift},[8,9.5,10][i],
+      i===0?'Échauffement progressif avant (🔥) : monte par paliers, singles rapides. Doit sortir à RPE 7–8.'
+      :i===1?'RPE ≤ 8 → 3ᵉ essai ambitieux. RPE 9+ → 3ᵉ essai prudent (+2,5 kg).'
+      :`Le PR. 4–5 min de repos avant. Filme-toi. Si le 2ᵉ était facile (RPE ≤ 8) : vise ${calcLoad(lift,106).label}.`,1);
   });
   day.ex=att;
-  const draft=ensureDraft(7,d,day,0);
-  const logged=logFor(7,d);
+  const draft=ensureDraft(NW,d,day,0);
+  const logged=logFor(NW,d);
   let h=`<div class="card tight"><div class="muted">Tests étalés et hiérarchisés pour la fraîcheur du SNC. Échauffement progressif + 3 essais. 3–5 min de repos entre singles lourds. ${esc(t.note)}</div></div>`;
   if(logged) h+=`<div class="card tight" style="border-color:var(--good)"><span class="badge good">✓ test enregistré</span></div>`;
   h+=`<div class="card"><div class="row"><b>🎯 ${esc(day.focus)}</b><div class="grow"></div>
     <span class="badge acc">1RM actuel : ${fmt(rm)} kg${LIFTS[lift].type==='w'?' (lest)':''}</span></div>`;
-  day.ex.forEach((ex,xi)=>{ h+=exerciseHTML(ex,xi,0,draft,7,d); });
+  day.ex.forEach((ex,xi)=>{ h+=exerciseHTML(ex,xi,0,draft,NW,d); });
   const tg=TARGETS[lift];
-  h+=`<div class="ex"><div class="ex-note">🎯 Cible S7 : <b>${fmt(rm+tg[0])} – ${fmt(rm+tg[1])} kg</b> (gain +${fmt(tg[0])} à +${fmt(tg[1])} kg).
+  h+=`<div class="ex"><div class="ex-note">🎯 Cible du bloc : <b>${fmt(rm+tg[0])} – ${fmt(rm+tg[1])} kg</b> (gain +${fmt(tg[0])} à +${fmt(tg[1])} kg).
   Réussi ? Mets à jour ton 1RM dans Profil — tout le prochain cycle se recale.</div></div></div>
-  <button class="btn" onclick="openFinish(7,${d})">✅ Enregistrer le test</button>`;
+  <button class="btn" onclick="openFinish(${NW},${d})">✅ Enregistrer le test</button>`;
   return h;
 }
 
@@ -1064,12 +1094,11 @@ function finishSession(w,d){
   const sleep=+$('f-sleep').value||7;
   const fat=+(document.querySelector('#f-fat .chip.on')?.dataset.v||3);
   const notes=$('f-notes').value;
-  const bk=w===7?null:blockKey(w);
   const pi=progDayIdx(w,d); // [AJOUT] index de séance décalé par le jour de repos
-  const day = w===7 ? null : BLOCK_DAYS[bk].days[pi];
+  const day = BLOCK_DAYS[blockKey(w)].days[pi]; // null = journée de test
   const draft=getDraft(w,d)||{ex:[]};
-  const names = w===7 ? ['Ouverture','2ᵉ essai','3ᵉ essai / PR'] : day.ex.map(e=>e.name);
-  const liftOf = i => w===7 ? WEEK7[pi].lift : (day.ex[i].load&&day.ex[i].load.lift)||null;
+  const names = !day ? ['Ouverture','2ᵉ essai','3ᵉ essai / PR'] : day.ex.map(e=>e.name);
+  const liftOf = i => !day ? TEST_WEEK[pi].lift : (day.ex[i].load&&day.ex[i].load.lift)||null;
   const old=logFor(w,d); if(old) S.logs=S.logs.filter(l=>l!==old);
   const log={id:Date.now().toString(36), date:new Date().toISOString().slice(0,10), week:w, day:d,
     sleep, fatigue:fat, readiness:readiness(sleep,fat), notes,
@@ -1130,7 +1159,7 @@ function saveDaily(){
 /* ================== VUE : PROGRAMME ================== */
 let planWeek=1;
 function planHTML(){
-  let h=`<h1>📅 Programme — 7 semaines</h1>
+  let h=`<h1>📅 Programme — bloc ${NW} semaines</h1>
   <div class="card tight" style="margin-top:10px"><table>
     <tr><th>Bloc</th><th>Sem.</th><th>Intensité</th><th>RPE</th></tr>
     ${BLOCKS.map(b=>`<tr><td><b>${b.name}</b></td><td>S${b.weeks.join('–S')}</td><td>${b.int}</td><td>${b.rpe}</td></tr>`).join('')}
@@ -1138,36 +1167,44 @@ function planHTML(){
   <div class="card tight"><div class="muted"><b style="color:var(--acc2)">RÈGLE D'OR</b> — le % est un point de départ, le RPE décide.
   ① Au-dessus du RPE cible → baisse de 2,5–5 kg. ② En dessous → tu peux monter, max +5 kg/séance.
   ③ Mets à jour tes 1RM dans Profil dès qu'un test le justifie : tout se recale.</div></div>
-  <div class="chips">${[1,2,3,4,5,6,7].map(i=>`<div class="chip ${i===planWeek?'on':''}" onclick="planWeek=${i};render()">S${i}</div>`).join('')}</div>`;
-  if(planWeek===7){
-    h+=`<div class="card"><b>🎯 S7 — Semaine de pic & tests</b>
-    <table style="margin-top:8px"><tr><th>Jour</th><th>Test</th><th>~92%</th><th>~97%</th><th>PR ~103%</th></tr>
-    ${WEEK7.map((t,i)=>{ const cd=i<restDayOf(7)?i:i+1; // [AJOUT] décalage repos flexible
-      if(!t.lift) return `<tr><td>${DAY_NAMES[cd].slice(0,3)}</td><td colspan="4" class="muted">REPOS (avant le deadlift)</td></tr>`;
+  <div class="card tight"><div class="muted"><b style="color:var(--acc2)">RÈGLES DU BLOC</b><br>
+  • <b>Poids de corps</b> : 68 → 66 kg en ~0,3 kg/sem (déficit ~300 kcal, protéines 2 g/kg ≈ 135 g/j, glucides autour des séances). Pèse-toi chaque matin, mets la <b>moyenne de la semaine</b> dans Profil le dimanche : le lest se recalcule. Déficit stoppé dès S5.<br>
+  • <b>Coude (épitrochlée)</b> : douleur ≤ 3/10 pendant et disparue le lendemain matin = OK. Sinon : 1) supprime les négatives 1 bras, 2) assistance +5 kg, 3) back-off tractions −1 série. Les top sets lestés ne bougent qu'en dernier recours.<br>
+  • <b>Genouillères SBD</b> sur toutes les séries de squat de travail dès S1. Ceinture à partir de 80 %.<br>
+  • <b>Repos</b> : 3–5 min sur les séries lourdes, 2 min en volume, 90 s en accessoires.</div></div>
+  <div class="chips">${WEEK_NUMS.map(i=>`<div class="chip ${i===planWeek?'on':''}" onclick="planWeek=${i};render()">S${i}</div>`).join('')}</div>`;
+  const bk=blockKey(planWeek), blk=BLOCK_DAYS[bk], wkIdx=(planWeek-1)%2;
+  h+=`<div class="card tight"><div class="muted">${esc(blk.intro)}</div></div>`;
+  const rd=restDayOf(planWeek); // [AJOUT] repos flexible reflété dans le programme
+  [0,1,2,3,4,5,6].filter(cd=>cd!==rd).forEach(cd=>{
+    const d=cd, pi=progDayIdx(planWeek,cd), day=blk.days[pi];
+    if(!day){ // S6 : test ou repos
+      const t=TEST_WEEK[pi];
+      if(!t.lift){ h+=`<div class="card tight"><div class="muted"><b>${DAY_NAMES[d]}</b> — ${esc(t.note)}</div></div>`; return; }
       const a=ATTEMPT_PCTS.map(p=>calcLoad(t.lift,p).label);
-      return `<tr><td>${DAY_NAMES[cd].slice(0,3)}</td><td><b>${LIFTS[t.lift].label}</b></td><td>${a[0]}</td><td>${a[1]}</td><td style="color:var(--acc2)"><b>${a[2]}</b></td></tr>`;}).join('')}
-    <tr><td>${DAY_NAMES[restDayOf(7)].slice(0,3)}</td><td colspan="4" class="muted">REPOS (flexible)</td></tr></table></div>
-    <div class="card"><b>Objectifs réalistes S7</b><table style="margin-top:8px">
+      h+=`<div class="card"><div class="row"><b>${DAY_NAMES[d]}</b><span class="badge acc" style="margin-left:auto">🎯 TEST ${LIFTS[t.lift].label}</span></div>
+      <table style="margin-top:8px"><tr><th>Ouverture ~${ATTEMPT_PCTS[0]}%</th><th>2ᵉ ~${ATTEMPT_PCTS[1]}%</th><th>PR ~${ATTEMPT_PCTS[2]}%</th></tr>
+      <tr><td>${a[0]}</td><td>${a[1]}</td><td style="color:var(--acc2)"><b>${a[2]}</b></td></tr></table>
+      <div class="ex-note">${esc(t.note)}</div></div>`;
+      return;
+    }
+    h+=`<div class="card"><details ${d===todayDow()&&planWeek===Math.min(currentWeek(),NW)?'open':''} style="border:none">
+    <summary><b>${DAY_NAMES[d]}</b><span class="badge" style="margin-left:auto">${esc(day.focus)}</span></summary>
+    <table><tr><th>Exercice</th><th>S×R</th><th>Charge</th><th>RPE</th></tr>
+    ${day.ex.map(ex=>{const L=exLoad(ex,wkIdx);
+      return `<tr><td>${esc(ex.name)}${ex.note?`<div class="ex-note">${esc(ex.note)}</div>`:''}</td>
+      <td style="white-space:nowrap">${ex.sets}×${ex.reps}</td>
+      <td style="color:var(--acc2);font-weight:600">${esc(L.label)}</td><td>${ex.rpe??'—'}</td></tr>`;}).join('')}
+    </table></details></div>`;
+  });
+  h+=`<div class="card tight"><div class="muted">${DAY_NAMES[rd]} : <b>REPOS TOTAL</b> — jour de repos flexible : déplace-le depuis l'onglet Séance (« 😴 Je suis fatigué ») quand tu en as besoin.</div></div>`;
+  if(planWeek===NW){
+    h+=`<div class="card"><b>Objectifs réalistes S${NW}</b><table style="margin-top:8px">
     <tr><th>Lift</th><th>Actuel</th><th>Cible</th></tr>
-    ${Object.keys(LIFTS).map(k=>{const rm=S.settings.rms[k],t=TARGETS[k];
+    ${BLOCK_LIFTS.map(k=>{const rm=S.settings.rms[k],t=TARGETS[k];
       return `<tr><td>${LIFTS[k].label}</td><td>${fmt(rm)} kg</td><td><b>${fmt(rm+t[0])}–${fmt(rm+t[1])} kg</b></td></tr>`;}).join('')}
+    <tr><td>Traction 1 bras</td><td>1 rep élastique ~10 kg</td><td><b>1 rep élastique ~5 kg / bras</b></td></tr>
     </table></div>`;
-  } else {
-    const bk=blockKey(planWeek), blk=BLOCK_DAYS[bk], wkIdx=(planWeek-1)%2;
-    h+=`<div class="card tight"><div class="muted">${esc(blk.intro)}</div></div>`;
-    const rd=restDayOf(planWeek); // [AJOUT] repos flexible reflété dans le programme
-    [0,1,2,3,4,5,6].filter(cd=>cd!==rd).forEach(cd=>{
-      const d=cd, day=blk.days[progDayIdx(planWeek,cd)];
-      h+=`<div class="card"><details ${d===todayDow()&&planWeek===Math.min(currentWeek(),7)?'open':''} style="border:none">
-      <summary><b>${DAY_NAMES[d]}</b><span class="badge" style="margin-left:auto">${esc(day.focus)}</span></summary>
-      <table><tr><th>Exercice</th><th>S×R</th><th>Charge</th><th>RPE</th></tr>
-      ${day.ex.map(ex=>{const L=exLoad(ex,wkIdx);
-        return `<tr><td>${esc(ex.name)}${ex.note?`<div class="ex-note">${esc(ex.note)}</div>`:''}</td>
-        <td style="white-space:nowrap">${ex.sets}×${ex.reps}</td>
-        <td style="color:var(--acc2);font-weight:600">${esc(L.label)}</td><td>${ex.rpe??'—'}</td></tr>`;}).join('')}
-      </table></details></div>`;
-    });
-    h+=`<div class="card tight"><div class="muted">${DAY_NAMES[rd]} : <b>REPOS TOTAL</b> — jour de repos flexible : déplace-le depuis l'onglet Séance (« 😴 Je suis fatigué ») quand tu en as besoin.</div></div>`;
   }
   return h;
 }
@@ -1231,9 +1268,9 @@ function progHTML(){
       <td>${best?`${fmt(best.w)} kg × ${best.reps}${best.rpe?` @${best.rpe}`:''}`:'—'}</td>
       <td style="color:var(--acc2)">${bestE?fmt(r(bestE,0.5))+' kg':'—'}</td></tr>`;}).join('')}
     </table></div>
-    <div class="card"><b>🎯 Cibles fin de cycle (S7)</b><table style="margin-top:8px">
+    <div class="card"><b>🎯 Cibles fin de bloc (S6)</b><table style="margin-top:8px">
     <tr><th>Lift</th><th>Actuel</th><th>Cible</th><th>Gain visé</th></tr>
-    ${Object.keys(LIFTS).map(k=>{const rm=S.settings.rms[k],t=TARGETS[k];
+    ${BLOCK_LIFTS.map(k=>{const rm=S.settings.rms[k],t=TARGETS[k];
       return `<tr><td>${LIFTS[k].label}</td><td>${fmt(rm)}</td><td><b>${fmt(rm+t[0])}–${fmt(rm+t[1])}</b></td><td>+${fmt(t[0])} à +${fmt(t[1])} kg</td></tr>`;}).join('')}
     </table></div>`;
   } else { // [AJOUT] bilan de cycle
@@ -1255,10 +1292,10 @@ function bestLiftRM(k){ // meilleur 1RM (lest/barre) atteint sur le cycle : max(
 }
 function cycleStats(){
   const ref=S.cycleRef||{bw:S.settings.bw,rms:{...S.settings.rms}};
-  const per=Object.keys(LIFTS).map(k=>({k, init:ref.rms[k], best:bestLiftRM(k),
+  const per=BLOCK_LIFTS.map(k=>({k, init:ref.rms[k], best:bestLiftRM(k),
     delta:r(bestLiftRM(k)-ref.rms[k],0.5), tgt:TARGETS[k], comp:COMP_LIFTS.includes(k)}));
-  const done=S.logs.length, planned=6*Math.max(1,Math.min(currentWeek(),7));
-  const avgReady=done? Math.round(S.logs.reduce((a,l)=>a+l.readiness,0)/done*10)/10 : 0;
+  const cl=S.logs.filter(inCycle), done=cl.length, planned=6*Math.max(1,Math.min(currentWeek(),NW));
+  const avgReady=done? Math.round(cl.reduce((a,l)=>a+l.readiness,0)/done*10)/10 : 0;
   const totInit=COMP_LIFTS.reduce((a,k)=>a+(+ref.rms[k]||0),0); // lest seul, hors poids de corps
   const totNow=systemTotal();
   return {per,done,planned,avgReady,totInit,totNow,
@@ -1277,7 +1314,7 @@ function bilanHTML(){
       <div class="sub">${c.totNow>c.totInit?`+${fmt(r(c.totNow-c.totInit,0.5))} kg gagnés ⚡`:'baseline du cycle'}</div>
     </div></div>
   <div class="statgrid">
-    <div class="stat"><div class="v">${c.done}<span style="font-size:.8rem;color:var(--dim)">/${c.planned}</span></div><div class="l">Séances (${wk>7?'cycle fini':'S'+Math.min(wk,7)})</div></div>
+    <div class="stat"><div class="v">${c.done}<span style="font-size:.8rem;color:var(--dim)">/${c.planned}</span></div><div class="l">Séances (${wk>NW?'cycle fini':'S'+Math.min(wk,NW)})</div></div>
     <div class="stat"><div class="v">${consist}%</div><div class="l">Consistance</div></div>
     <div class="stat"><div class="v">${c.avgReady||'—'}</div><div class="l">Readiness moyen</div></div>
     <div class="stat"><div class="v">🔥 ${c.streak}</div><div class="l">Streak actuel</div></div>
@@ -1457,41 +1494,57 @@ function drawBars(cv,pts){
   x.fillStyle='#6a6a92'; x.fillText('5 = seuil deload', W-190, y5-6);
 }
 
-/* ================== VUE : MUSCLE-UP ================== */
-const MU_LADDER=[
-  ['3×3 à vide propres','Transition contrôlée, sans kip excessif.'],
-  ['+2,5 kg en singles (4×1)','Garder la même qualité de transition sous charge.'],
-  ['+5 kg en singles','RPE ≤ 9 sur le single.'],
-  ['+7,5 / +10 kg','Progression de +2,5 kg dès que RPE ≤ 9.'],
-  ['Test S7 : +12 à +15 kg','Objectif du cycle.'],
+/* ================== VUE : TRACTION 1 BRAS ================== */
+const OAP_LADDER=[
+  ['5×2/bras avec élastique ~20 kg, RPE ≤ 7','Base du bloc (S1–S2). Bassin et épaules face à la barre, sans vriller.'],
+  ['Lock-off 90° tenu 10 s/bras sans aide','Force dans la position où la traction 1 bras se gagne.'],
+  ['Négative 6 s/bras contrôlée jusqu’en bas','Vitesse constante sur toute l’amplitude, coude sans douleur.'],
+  ['1 rep/bras avec élastique ~10 kg à RPE ≤ 8','Ton max actuel devient un travail sous-maximal (S4–S5).'],
+  ['1 rep/bras avec élastique ~5 kg','Objectif du test S6.'],
+  ['1ʳᵉ traction 1 bras stricte','Objectif du bloc suivant — à ne pas forcer dans ce bloc.'],
 ];
-function muHTML(){
-  const bw=S.settings.bw, mus=sysRM('mu');
-  const pcts=[[70,'Volume technique pur, beaucoup de reps propres.'],[80,'Technique sous charge modérée.'],
-    [85,'Transition proche du réel, peu de reps.'],[Math.round(bw/mus*1000)/10,'Au poids de corps = déjà quasi-maximal. Singles only.']];
-  return `<h1>🤸 Protocole Muscle-up</h1>
+const OAP_WEEKS=[
+  ['S1','5×2/bras · élastique ~20 kg','Lock-off 90° 4×10 s · négatives 3×1 (5 s)'],
+  ['S2','5×2/bras · élastique ~20 kg (RPE 8)','Lock-off 90° 4×10 s · négatives 3×1 (5 s)'],
+  ['S3','5×2/bras · élastique ~15 kg','Lock-off 120° 4×8 s · négatives 4×1 (6 s)'],
+  ['S4','4×2/bras ~15 kg + 1×1 ~10 kg','Lock-off 120° 4×8 s · négatives 4×1 (6 s)'],
+  ['S5','4×1/bras · élastique ~10 kg','Lock-off 90°+120° 3×8 s · pas de négatives'],
+  ['S6','TEST : élastique le plus léger','—'],
+];
+function oapHTML(){
+  const bw=S.settings.bw;
+  const bands=[20,15,10,5,0];
+  return `<h1>💪 Traction 1 bras</h1>
   <div class="card" style="margin-top:10px;border-color:rgba(248,81,73,.5)">
     <b style="color:var(--bad)">PRINCIPE CLÉ</b>
-    <div class="muted" style="margin-top:6px">Avec un 1RM de +${fmt(S.settings.rms.mu)} kg, un muscle-up au poids de corps ≈ <b>${Math.round(bw/mus*100)}% de ton max</b>.
-    Faire du « volume » à vide = enchaîner des singles quasi-maximaux → fatigue, technique qui casse, stagnation.
-    Le volume technique se fait <b>EN ASSISTANCE</b> (élastique / saut) pour redescendre à 70–85% et faire des reps PROPRES.
-    On sépare 3 qualités : explosivité (frais, chargé), technique de transition (assistance, volume), force spécifique (lest).</div></div>
-  <div class="card"><b>Les 3 phases à entraîner séparément</b>
-  <table style="margin-top:8px"><tr><th>Phase</th><th>Drill</th><th>S×R</th><th>Quand</th></tr>
-  <tr><td><b>1. Pull explosif</b></td><td>Traction explosive haute (sternum vers la barre)<div class="ex-note">La hauteur du pull conditionne la transition.</div></td><td>5×3</td><td>Lundi</td></tr>
-  <tr><td><b>2. Transition</b></td><td>Négative lente 5 s + transition assistée élastique<div class="ex-note">Passer les coudes DEVANT la barre. C'est le verrou principal.</div></td><td>5×3</td><td>Mercredi</td></tr>
-  <tr><td><b>3. Dip de sortie</b></td><td>Straight bar dips<div class="ex-note">Verrouiller la sortie, force en position basse.</div></td><td>4×6</td><td>Mercredi</td></tr>
-  </table></div>
-  <div class="card"><b>Régler l'assistance (calculé sur tes 1RM)</b>
-  <table style="margin-top:8px"><tr><th>Intensité</th><th>Charge effective</th><th>Assistance à retirer</th></tr>
-  ${pcts.map(([p,u])=>{ const eff=mus*p/100, ass=bw-eff;
-    return `<tr><td><b>${p}%</b></td><td>${fmt(r(eff,0.5))} kg</td>
-    <td>${ass>0.2?fmt(r(ass,0.5))+' kg':'—'}<div class="ex-note">${u}</div></td></tr>`;}).join('')}
+    <div class="muted" style="margin-top:6px">Ton point de départ : 30 s de hold en haut sur chaque bras, 3 reps avec ~20 kg d'assistance et 1 rep avec ~10 kg.
+    Ton hold est déjà solide : ce qui te limite, c'est la <b>force sur l'amplitude</b> (sortie bras tendu et passage 90°→120°).
+    Le bloc travaille donc 2 qualités, à 2 jours d'écart : <b>la force en assistance</b> le mardi (reps complètes, jamais à l'échec) et
+    <b>les angles faibles</b> le jeudi (lock-off, négatives). Le coude passe avant tout : 2 séances de tirage ne se suivent jamais.</div></div>
+  <div class="card"><b>Progression semaine par semaine</b>
+  <table style="margin-top:8px"><tr><th>Sem.</th><th>Mardi — force</th><th>Jeudi — angles</th></tr>
+  ${OAP_WEEKS.map(w=>`<tr><td><b>${w[0]}</b></td><td>${w[1]}</td><td>${w[2]}</td></tr>`).join('')}
   </table>
-  <div class="ex-note" style="margin-top:8px">L'assistance réelle d'un élastique varie avec l'étirement. Ces kg sont une CIBLE : choisis l'élastique qui te laisse faire 3 reps propres en t'arrêtant à ~2 reps de l'échec (RPE 7–8).</div></div>
+  <div class="ex-note" style="margin-top:8px">Bras alternés, 90 s à 3 min entre chaque bras. Commence toujours par le bras le plus faible.</div></div>
+  <div class="card"><b>Charge réelle selon l'élastique</b> <span class="sub">(PDC ${fmt(bw)} kg)</span>
+  <table style="margin-top:8px"><tr><th>Assistance</th><th>Charge tirée</th><th>% PDC</th></tr>
+  ${bands.map(a=>`<tr><td><b>${a?'~'+a+' kg':'aucune'}</b></td><td>${fmt(bw-a)} kg</td><td>${Math.round((bw-a)/bw*100)}%</td></tr>`).join('')}
+  </table>
+  <div class="ex-note" style="margin-top:8px">L'aide d'un élastique varie avec l'étirement (forte en bas, faible en haut). Ces kg sont des repères : garde le même élastique et le même point d'attache d'une semaine à l'autre. Perdre 2 kg = −3 % de charge sur la traction 1 bras : c'est gratuit.</div></div>
+  <div class="card"><b>Technique</b>
+  <div class="muted" style="margin-top:6px">• Prise neutre ou légèrement en supination, main dans l'axe de l'épaule.<br>
+  • Départ bras tendu actif : abaisse l'omoplate AVANT de plier le coude.<br>
+  • Jambes serrées et gainées devant (hollow léger) pour limiter la rotation.<br>
+  • Le coude descend le long du corps, menton au-dessus de la main.<br>
+  • Main libre posée sur la poitrine — jamais sur le bras qui tire.</div></div>
+  <div class="card"><b>🩹 Protocole coude (épitrochlée)</b>
+  <div class="muted" style="margin-top:6px">• Avant chaque séance de tirage : isométrie des fléchisseurs du poignet, 4×30 s (déjà dans tes séances).<br>
+  • Jeudi : curl poignet excentrique 3×15 (4 s de descente) + pronation au marteau.<br>
+  • Douleur ≤ 3/10 qui disparaît le lendemain = continue. Au-delà : enlève d'abord les négatives, puis augmente l'assistance de +5 kg.<br>
+  • Douleur qui augmente d'une semaine à l'autre ou présente au repos → stop 1 bras et consulte un kiné.</div></div>
   <div class="card"><b>Échelle de progression</b>
-  ${MU_LADDER.map((s,i)=>`<div class="checkrow ${S.mu[i]?'on':''}" onclick="S.mu[${i}]=!S.mu[${i}];save();render()">
-    <div class="box2">${S.mu[i]?'✓':''}</div>
+  ${OAP_LADDER.map((s,i)=>`<div class="checkrow ${S.oap[i]?'on':''}" onclick="S.oap[${i}]=!S.oap[${i}];save();render()">
+    <div class="box2">${S.oap[i]?'✓':''}</div>
     <div class="tx"><b>Étape ${i+1} — ${esc(s[0])}</b><div class="ex-note">${esc(s[1])}</div></div></div>`).join('')}
   </div>`;
 }
@@ -1507,8 +1560,8 @@ function meHTML(){
     <div class="ex-note" style="margin-top:10px">Load système : dips ${fmt(sysRM('dips'))} kg · tractions ${fmt(sysRM('pull'))} kg · muscle-up ${fmt(sysRM('mu'))} kg (PDC + lest).</div>
   </div>
   <div class="card"><b>Cycle</b>
-    <label>Date de début (un lundi)</label><input type="date" value="${s.startDate||''}" onchange="S.settings.startDate=this.value;S.cycleRef={date:this.value,bw:S.settings.bw,rms:{...S.settings.rms}};save();render();toast('Nouveau cycle — baseline du bilan enregistrée 📌')">
-    <div class="ex-note" style="margin-top:8px">Semaine en cours : ${currentWeek()>7?'cycle terminé':'S'+currentWeek()}. Pour relancer un cycle après S7 : mets à jour tes 1RM puis change cette date (la baseline du bilan repart de là).</div>
+    <label>Date de début (un lundi)</label><input type="date" value="${s.startDate||''}" onchange="newCycle(this.value);render();toast('Nouveau cycle — baseline du bilan enregistrée 📌')">
+    <div class="ex-note" style="margin-top:8px">Semaine en cours : ${currentWeek()>NW?'cycle terminé':'S'+currentWeek()}. Pour relancer un cycle après S${NW} : mets à jour tes 1RM puis change cette date (la baseline du bilan repart de là).</div>
   </div>
   <div class="card"><b>⚡ Seuils de rang Hunter <span class="sub">(kg — total compé : squat + tractions + dips + muscle-up, en LEST SEUL, hors poids de corps)</span></b>
     <div class="ex-note" style="margin-top:6px">Total compé actuel : <b style="color:var(--acc2)">${fmt(r(systemTotal(),0.5))} kg</b> → rang <b style="color:${rankInfo().cur.color}">${rankInfo().cur.r} · ${esc(rankInfo().cur.s)}</b>. Le deadlift et le poids de corps ne comptent pas.</div>
@@ -1532,7 +1585,7 @@ function meHTML(){
     <tr><td>7</td><td>3</td><td>3 reps en réserve. Technique facile.</td></tr>
     <tr><td>6</td><td>4+</td><td>Échauffement / travail de vitesse.</td></tr></table></div>
   <div class="card"><b>🖼️ Fonds d'écran <span class="sub">(un par contexte — défaut : Jin-Woo intégré)</span></b>
-    <div class="ex-note" style="margin-top:6px">Le fond change selon le contexte : séance normale, jour de repos (mets Beru qui dort 🐜), et semaine 7 en mode boss fight. Images stockées en local, max ~2,5 Mo chacune.</div>
+    <div class="ex-note" style="margin-top:6px">Le fond change selon le contexte : séance normale, jour de repos (mets Beru qui dort 🐜), et semaine de tests en mode boss fight. Images stockées en local, max ~2,5 Mo chacune.</div>
     ${Object.keys(BG_SLOTS).map(slot=>`<div class="row" style="margin-top:10px">
       <div class="grow"><b style="font-size:.84rem">${BG_SLOTS[slot]}</b>
         <div class="sub">${(s.bgImages&&s.bgImages[slot])?'image personnalisée':slot==='main'?'Jin-Woo (défaut)':'hérite du fond Normal'}</div></div>
@@ -1798,7 +1851,7 @@ function renderChooser(){
   c.innerHTML=`
    <div class="choose-half choose-lift" onclick="enterMode('lift')">
      <div class="em">🏋️</div><h2>STREETLIFTING</h2>
-     <p>Ton programme de force 7 semaines, le système de rang Solo Leveling et le suivi de tes 1RM.</p>
+     <p>Ton bloc de force 6 semaines, le système de rang Solo Leveling et le suivi de tes 1RM.</p>
      <div class="go">ENTRER ▸</div></div>
    <div class="choose-sep"><span>CHOISIS TA VOIE</span></div>
    <div class="choose-half choose-zen" onclick="enterMode('mobility')">
