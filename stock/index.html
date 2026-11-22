@@ -206,6 +206,8 @@ body.locked{padding-left:0!important}
    ========================================================= */
 const KEY='stockchantier_v1', KEY_PREV=KEY+'_prev', KEY_PREVT=KEY+'_prevt', KEY_ATT=KEY+'_att', KEY_CFG=KEY+'_cfg';
 const CAT_VER=1, PIN_ITER=600000, REC_ITER=200000;
+/* serveur de synchronisation (Supabase) : adresse du projet + clé publique « publishable » */
+const SYNC_URL='https://nugqhpahbvzbvqyfwcfg.supabase.co', SYNC_KEY='sb_publishable_6qieHOC2AfX0RMASyAquSw_V3vketR4';
 
 /* ---------- utilitaires ---------- */
 const $=id=>document.getElementById(id);
@@ -883,14 +885,14 @@ function save(){const data=JSON.stringify(DB),dek=DEK,env=ENV;if(!dek||!env)retu
     }catch(e){console.error(e);toast("⚠️ Impossible d'enregistrer : mémoire de l'appareil pleine ?");}
   }).catch(e=>{console.error(e);toast('⚠️ Erreur de chiffrement');});
   return saving;}
-function commit(){DB.mod=Date.now();rebuild();return save();}
+function commit(){DB.mod=Date.now();rebuild();const p=save();markDirty();return p;}
 function persist(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(ok=>{CFG.persist=!!ok;saveCfg();});}catch(e){}}
 
 /* ---------- fusion (import d'une sauvegarde) ---------- */
 function mergeById(a,b){const m=new Map();(a||[]).forEach(x=>m.set(x.id,x));(b||[]).forEach(x=>{const y=m.get(x.id);if(!y||(x.up||0)>(y.up||0))m.set(x.id,x);});return [...m.values()];}
 function mergeDB(a,b){const r=Object.assign({},a);r.items=mergeById(a.items,b.items);r.locs=mergeById(a.locs,b.locs);r.ch=mergeById(a.ch,b.ch);
   r.moves=mergeById(a.moves,b.moves).sort((x,y)=>x.ts-y.ts);r.sups=[...new Set([...(a.sups||[]),...(b.sups||[])])];
-  if((b.cfg?.up||0)>(a.cfg?.up||0))r.cfg=b.cfg;r.created=Math.min(a.created||Date.now(),b.created||Date.now());return r;}
+  if((b.cfg?.up||0)>(a.cfg?.up||0))r.cfg=b.cfg;r.created=Math.min(a.created||Date.now(),b.created||Date.now());r.mod=Math.max(a.mod||0,b.mod||0);r.sync=a.sync||b.sync;return r;}
 
 /* ---------- interface : modale, toast, confirmation ---------- */
 const Modal={open(h){$('modal-box').innerHTML=h;$('modal').style.display='flex';$('modal-box').scrollTop=0;},close(){$('modal').style.display='none';$('modal-box').innerHTML='';}};
@@ -910,8 +912,8 @@ function lockHTML(){
   case 'welcome': return `<div class="lock"><div class="logo">${IC.box}</div><h1>Stock Chantier</h1>
     <p class="muted" style="max-width:380px;margin:8px auto 26px">Gestion de stock pour la maçonnerie : recherche rapide, entrées, sorties par chantier, plusieurs lieux de stockage. Vos données restent <b>chiffrées sur votre appareil</b>.</p>
     <div style="width:100%;max-width:340px"><button class="btn" onclick="S.lk='create';render()">Créer mon stock</button>
-    <button class="btn sec" onclick="pickFile('restore')">Restaurer une sauvegarde</button>
-    <p class="sub" style="margin-top:16px">Le stock existe déjà sur un autre appareil ? Là-bas : <b>Plus › Sauvegarde › Envoyer</b>. Ici : <b>Restaurer une sauvegarde</b>.</p></div></div>`;
+    ${syncAvailable()?`<button class="btn sec" onclick="S.lk='pair';render()">🔄 Relier à mon stock existant</button>`:''}<button class="btn sec" onclick="pickFile('restore')">Restaurer une sauvegarde</button>
+    <p class="sub" style="margin-top:16px">Le stock existe déjà sur un autre appareil ? ${syncAvailable()?'Là-bas : <b>Plus › Synchronisation › Ajouter un appareil</b>, puis ici : <b>Relier à mon stock existant</b>.':'Là-bas : <b>Plus › Sauvegarde › Envoyer</b>. Ici : <b>Restaurer une sauvegarde</b>.'}</p></div></div>`;
   case 'create': return `<div class="lock"><div class="inner"><h1>Créer votre stock sécurisé</h1>
     <p class="muted" style="margin:8px 0 4px">Choisissez un code personnel. Il sera demandé à chaque ouverture et sert à <b>chiffrer</b> toutes vos données. Ne le donnez à personne.</p>
     <form onsubmit="event.preventDefault();doCreate()">
@@ -926,7 +928,7 @@ function lockHTML(){
     <div class="code">${esc(S.recKey)}</div>
     <div class="btns" style="margin-top:10px"><button class="btn sec" onclick="copyTxt(S.recKey)">Copier</button><button class="btn sec" onclick="printRec(S.recKey)">Imprimer</button></div>
     <label style="display:flex;gap:10px;align-items:center;margin-top:18px;font-size:.92rem;color:var(--txt)"><input type="checkbox" id="rec-ok" style="width:22px;min-height:22px;height:22px"> J'ai noté ma clé de secours</label>
-    <button class="btn" onclick="if(!$('rec-ok').checked){toast('Cochez la case après avoir noté la clé');return;}S.recKey=null;S.lk='locs';render()">Continuer</button></div></div>`;
+    <button class="btn" onclick="if(!$('rec-ok').checked){toast('Cochez la case après avoir noté la clé');return;}S.recKey=null;S.lk=S.recThen||null;S.recThen=null;render();if(!S.lk)syncNow('start')">Continuer</button></div></div>`;
   case 'locs': { const L=S.tmpLocs||(S.tmpLocs=DB.locs.map(l=>({id:l.id,n:l.n,ty:l.ty})));
     return `<div class="lock"><div class="inner"><h1>Vos lieux de stockage</h1>
     <p class="muted" style="margin:8px 0 6px">Où rangez-vous votre matériel ? Ajoutez un camion, un garage, un stock laissé sur chantier… Modifiable plus tard dans <b>Plus › Emplacements</b>.</p>
@@ -942,6 +944,8 @@ function lockHTML(){
     <div class="sub" id="f-msg" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
     <button class="btn" id="f-btn">Valider</button></form>
     <button class="btn ghost" onclick="S.lk='unlock';render()">Retour</button></div></div>`;
+  case 'pair': return pairHTML();
+  case 'paircode': return pairCodeHTML();
   case 'newcode': return `<div class="lock"><div class="logo">${IC.box}</div><h1>Presque fini</h1><p class="muted" style="margin:8px 0 18px">Choisissez le code qui protégera cet appareil.</p><button class="btn" style="max-width:340px" onclick="openImportNewCode()">Choisir mon code</button></div>`;
   default: { const env=readEnv();
     return `<div class="lock"><div class="logo">${IC.lock.replace(/18/g,'30')}</div><h1>Stock Chantier</h1>
@@ -967,7 +971,7 @@ async function doCreate(){
   try{const dek=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);const rec=genRecovery();
     ENV={app:'stockchantier',v:1,num:/^\d+$/.test(p1),kp:await wrapWith(dek,p1,PIN_ITER),kr:await wrapWith(dek,normRec(rec),REC_ITER)};
     DEK=dek;DB=freshDB(co);rebuild();await save();persist();attReset();
-    S.recKey=rec;S.lk='rec';lastAct=Date.now();render();
+    S.recKey=rec;S.recThen='locs';S.lk='rec';lastAct=Date.now();render();
   }catch(e){console.error(e);busy('c-btn',false,'Créer');lkMsg('c-msg','Erreur : '+e.message);}
 }
 function finishLocs(){
@@ -995,7 +999,7 @@ async function doUnlock(){
   try{db=await decryptData(env,dek);}catch(e){try{const p=JSON.parse(localStorage.getItem(KEY_PREV));db=await decryptData(p,dek);fromPrev=true;}catch(_){}}
   if(!db){busy('lk-btn',false,'Déverrouiller');lkMsg('lk-msg',"Données endommagées sur cet appareil. Restaurez une sauvegarde (Code oublié ? › ou réinstallez).");return;}
   ENV=env;DEK=dek;const before=db.catVer;DB=migrate(db);rebuild();if(before!==DB.catVer||fromPrev)save();
-  S.lk=null;lastAct=Date.now();persist();render();
+  S.lk=null;lastAct=Date.now();persist();render();syncNow('unlock');
   if(fromPrev)toast('Données récupérées depuis la copie automatique de la veille');
 }
 async function doForgot(){
@@ -1008,7 +1012,7 @@ async function doForgot(){
     S.lk=null;lastAct=Date.now();render();toast('Nouveau code enregistré ✓');}
   catch(e){busy('f-btn',false,'Valider');lkMsg('f-msg','Données illisibles : '+e.message);}
 }
-function lock(){DB=null;DEK=null;ITEM={};LOC={};CH={};STOCK={};GROUPS=[];HAY=new Map();Modal.close();$('print').innerHTML='';$('toast').style.display='none';S.q='';S.lk='unlock';render();}
+function lock(){syncFlush();DB=null;DEK=null;ITEM={};LOC={};CH={};STOCK={};GROUPS=[];HAY=new Map();Modal.close();$('print').innerHTML='';$('toast').style.display='none';S.q='';S.lk='unlock';render();}
 
 /* =================== RENDU GÉNÉRAL =================== */
 let LASTSIG='';
@@ -1036,6 +1040,8 @@ function go(tab){
 
 /* =================== STOCK / RECHERCHE =================== */
 function needBk(){if(!DB||!DB.moves.length)return false;
+  const synced=DB.sync&&CFG.syncLast&&Date.now()-CFG.syncLast<3*864e5&&!SY.err;
+  if(synced)return (DB.mod||0)>(CFG.bkMod||0)&&Date.now()-(CFG.lastBk||DB.created||Date.now())>30*864e5;
   if(!CFG.lastBk)return DB.moves.length>=5||Date.now()-(DB.created||Date.now())>2*864e5;
   const since=DB.moves.filter(m=>m.ts>CFG.lastBk).length;
   return (DB.mod||0)>(CFG.bkMod||0)&&(Date.now()-CFG.lastBk>7*864e5||since>=50);}
@@ -1045,7 +1051,7 @@ function homeHTML(){
   const co=DB.cfg.company,locs=activeLocs();
   const chips=(locs.length>1?[['all','Tous les lieux'],...locs.map(l=>[l.id,LT[l.ty]?.[1]+' '+l.n])].map(([id,n])=>`<button class="chip ${S.loc===id?'on':''}" onclick="S.loc='${id}';S.lim=60;render()">${esc(n)}</button>`).join(''):'')+
     `<button class="chip ${S.only?'on':''}" onclick="S.only=!S.only;S.lim=60;render()">✓ En stock seulement</button>`;
-  return `<div class="row" style="justify-content:space-between"><div><h1>Stock</h1><div class="sub">${co?esc(co)+' · ':''}${nInStock()} article(s) en stock</div></div>
+  return `<div class="row" style="justify-content:space-between"><div><h1>Stock</h1><div class="sub">${co?esc(co)+' · ':''}${nInStock()} article(s) en stock</div>${DB.sync?`<div class="sub" id="sync-st" style="cursor:pointer;margin-top:2px" onclick="S.tab='plus';S.view='sync';render()">${syncLabel()}</div>`:''}</div>
     <button class="btn sec sm" onclick="lock()" aria-label="Verrouiller" title="Verrouiller">${IC.lock}</button></div>
   ${bkBanner()}
   <div class="search"><span class="ic">${IC.search}</span><input id="q" type="text" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Ciment, romane, sable 0/4…" value="${esc(S.q)}" oninput="onQ(this.value)" onkeydown="if(event.key==='Escape'){onQ('');this.value='';}if(event.key==='Enter')this.blur()">
@@ -1377,9 +1383,209 @@ function saveCh(id){
 }
 function delCh(id){ask('Supprimer ce chantier ?','Il n\'a aucun mouvement, il sera simplement retiré de la liste.','Supprimer',()=>{const c=CH[id];c.del=true;c.up=Date.now();S.chId=null;commit();render();},true);}
 
+/* =================== SYNCHRONISATION CHIFFRÉE (v2) ===================
+   Le stock est chiffré sur l'appareil (AES-256, clé de synchro partagée
+   uniquement entre les appareils reliés) puis envoyé au serveur.
+   Le serveur ne voit qu'un bloc illisible + un numéro de version.      */
+const KEY_SRV=KEY+'_srv';
+function srv(){if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)){try{const o=JSON.parse(localStorage.getItem(KEY_SRV));if(o&&o.url)return o;}catch(e){}}return {url:SYNC_URL,key:SYNC_KEY};}
+function syncAvailable(){return !!srv().url;}
+async function rpc(fn,args,keepalive){
+  const s=srv();const h={'Content-Type':'application/json',apikey:s.key};if(s.key&&!/^sb_/.test(s.key))h.Authorization='Bearer '+s.key;
+  const ctl=new AbortController();const to=setTimeout(()=>ctl.abort(),25000);
+  try{const r=await fetch(s.url.replace(/\/+$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(args),signal:keepalive?undefined:ctl.signal,keepalive:!!keepalive,cache:'no-store'});
+    const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null;}catch(e){}
+    if(!r.ok){const e=new Error((j&&(j.message||j.hint))||('HTTP '+r.status));e.status=r.status;throw e;}
+    return j;}
+  finally{clearTimeout(to);}
+}
+function b32(bytes){let bits=0,val=0,out='';for(const x of bytes){val=((val<<8)|x)&0xFFFFFF;bits+=8;while(bits>=5){out+=B32[(val>>>(bits-5))&31];bits-=5;}}if(bits>0)out+=B32[(val<<(5-bits))&31];return out;}
+const b64url=u=>b64(u).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const hex=u=>[...u].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function gz(bytes,pack){const cs=pack?new CompressionStream('gzip'):new DecompressionStream('gzip');return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer());}
+const importSK=s=>crypto.subtle.importKey('raw',unb64(s),{name:'AES-GCM'},false,['encrypt','decrypt']);
+async function encBlob(db,sk){
+  let bytes=te.encode(JSON.stringify(Object.assign({},db,{sync:undefined})));let z=0;   // copie figée immédiatement
+  if(window.CompressionStream){bytes=await gz(bytes,true);z=1;}
+  const iv=rnd(12);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},await importSK(sk),bytes);
+  return JSON.stringify({v:1,z,iv:b64(iv),ct:b64(ct)});
+}
+async function decBlob(txt,sk){
+  const o=JSON.parse(txt);let bytes=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},await importSK(sk),unb64(o.ct)));
+  if(o.z){if(!window.DecompressionStream)throw new Error('navigateur trop ancien');bytes=await gz(bytes,false);}
+  return JSON.parse(td.decode(bytes));
+}
+/* a contient-il quelque chose que b n'a pas (ou en plus récent) ? */
+function hasExtra(a,b){
+  for(const k of ['items','locs','ch','moves']){const m=new Map((b[k]||[]).map(x=>[x.id,x.up||0]));
+    for(const x of a[k]||[]){const u=m.get(x.id);if(u===undefined||(x.up||0)>u)return true;}}
+  if((a.cfg?.up||0)>(b.cfg?.up||0))return true;
+  const bs=new Set(b.sups||[]);return (a.sups||[]).some(s=>!bs.has(s));
+}
+
+/* ---------- moteur ---------- */
+const SY={busy:false,again:false,err:'',timer:null,ver:0,pending:false};
+function syncOn(){return !!(DB&&DB.sync&&syncAvailable()&&!CFG.syncOff);}
+function markDirty(){if(!DB||!DB.sync)return;SY.ver++;CFG.syncDirty=true;saveCfg();clearTimeout(SY.timer);SY.timer=setTimeout(()=>syncNow('local'),800);syncUI();}
+function errKind(e){if(e&&/denied/.test(e.message))return 'denied';if(e&&(e.status>=500||e.status===429))return 'server';if(e&&(e.name==='AbortError'||e.name==='TypeError'||!navigator.onLine))return 'offline';return (e&&e.message)||'erreur';}
+async function syncNow(why){
+  if(!syncOn())return;
+  if(SY.busy){SY.again=true;return;}
+  SY.busy=true;syncUI();const cr=DB.sync;
+  if(CFG.syncVid!==cr.vid){CFG.syncVid=cr.vid;CFG.syncRev=0;CFG.syncDirty=true;saveCfg();}
+  try{
+    for(let n=0;n<5;n++){
+      const g=await rpc('vault_get',{p_id:cr.vid,p_token:cr.tok,p_known:CFG.syncRev||0});
+      if(!DB||DB.sync!==cr)return;
+      if(g&&g.data!=null){
+        const remote=await decBlob(g.data,cr.sk);if(!DB||DB.sync!==cr)return;
+        const fromRemote=hasExtra(remote,DB),localExtra=hasExtra(DB,remote);
+        if(fromRemote){DB=mergeDB(DB,remote);DB.sync=cr;rebuild();await save();}
+        CFG.syncRev=g.rev;CFG.syncDirty=localExtra;saveCfg();
+        if(fromRemote)onRemoteChange();
+      }else if(g)CFG.syncRev=g.rev;
+      if(!CFG.syncDirty)break;
+      const v=SY.ver;const blob=await encBlob(DB,cr.sk);
+      const p=await rpc('vault_put',{p_id:cr.vid,p_token:cr.tok,p_base:CFG.syncRev||0,p_data:blob});
+      if(p&&p.conflict)continue;            // un autre appareil a écrit entre-temps : on relit et on fusionne
+      CFG.syncRev=p.rev;if(SY.ver===v)CFG.syncDirty=false;saveCfg();
+      if(!CFG.syncDirty)break;
+    }
+    SY.err='';CFG.syncLast=Date.now();saveCfg();
+  }catch(e){SY.err=errKind(e);if(SY.err!=='offline')console.warn('synchro',e);}
+  finally{SY.busy=false;syncUI();if(SY.again){SY.again=false;setTimeout(()=>syncNow('again'),300);}}
+}
+/* envoi express (verrouillage, appli mise en arrière-plan) */
+function syncFlush(){
+  if(!syncOn()||!CFG.syncDirty||SY.busy)return;const cr=DB.sync,base=CFG.syncRev||0,v=SY.ver;
+  encBlob(DB,cr.sk).then(blob=>rpc('vault_put',{p_id:cr.vid,p_token:cr.tok,p_base:base,p_data:blob},blob.length<60000))
+    .then(p=>{if(p&&!p.conflict){CFG.syncRev=p.rev;if(SY.ver===v)CFG.syncDirty=false;CFG.syncLast=Date.now();saveCfg();}}).catch(()=>{});
+}
+function isTyping(){const a=document.activeElement;return !!(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&$('app').contains(a));}
+function onRemoteChange(){
+  if(S.lk||!DB)return;renderNav();
+  if($('modal').style.display==='flex')SY.pending=true;
+  else if(isTyping()){if(S.tab==='stock'&&$('results'))$('results').innerHTML=resultsHTML();else SY.pending=true;}
+  else{const y=scrollY;render();scrollTo(0,y);}
+  if(document.visibilityState==='visible')toast('🔄 Stock mis à jour depuis un autre appareil');
+}
+function applyPending(){if(SY.pending&&DB&&!S.lk&&!isTyping()&&$('modal').style.display!=='flex'){SY.pending=false;const y=scrollY;render();scrollTo(0,y);}}
+function agoShort(ts){const s=Math.round((Date.now()-ts)/1000);if(s<45)return "à l'instant";if(s<3600)return 'il y a '+Math.round(s/60)+' min';
+  const d=new Date(ts);return d.toDateString()===new Date().toDateString()?'à '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'le '+d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});}
+function syncLabel(){
+  if(!DB||!DB.sync)return '';if(!syncAvailable())return '⚠️ Serveur de synchro non configuré';if(CFG.syncOff)return '⏸ Synchro en pause sur cet appareil';
+  if(SY.busy)return '🔄 Synchronisation…';
+  if(SY.err==='offline')return CFG.syncDirty?'📴 Hors ligne — envoi dès le retour du réseau':'📴 Hors ligne';
+  if(SY.err==='server')return CFG.syncDirty?'⏳ Serveur injoignable — envoi dès que possible':'⏳ Serveur momentanément injoignable';
+  if(SY.err==='denied')return '⚠️ Synchro refusée — voir Plus › Synchronisation';
+  if(SY.err)return '⚠️ Synchro impossible pour l\'instant';
+  return CFG.syncDirty?'⏳ Envoi en attente…':'☁️ Synchronisé'+(CFG.syncLast?' · '+agoShort(CFG.syncLast):'');
+}
+function syncUI(){const t=syncLabel();['sync-st','sync-big'].forEach(id=>{const e=$(id);if(e)e.textContent=t;});}
+
+/* ---------- activation / appairage ---------- */
+async function syncEnable(){
+  if(!syncAvailable())return toast('Serveur de synchro non configuré');busy('sy-on',true,'Activation…');
+  try{const k=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
+    const cr={vid:b32(rnd(16)),tok:b64url(rnd(32)),sk:b64(await crypto.subtle.exportKey('raw',k))};
+    await rpc('vault_create',{p_id:cr.vid,p_token:cr.tok,p_data:await encBlob(DB,cr.sk)});
+    DB.sync=cr;Object.assign(CFG,{syncVid:cr.vid,syncRev:1,syncDirty:false,syncOff:false,syncLast:Date.now()});saveCfg();SY.err='';
+    await save();render();toast('Synchronisation activée ✓');
+  }catch(e){busy('sy-on',false,'Activer la synchronisation');toast(errKind(e)==='offline'?'Pas de connexion Internet':'Activation impossible : '+e.message);}
+}
+async function pairKey(code){
+  const base=await crypto.subtle.importKey('raw',te.encode(code),'PBKDF2',false,['deriveBits']);
+  const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:te.encode('stockchantier-pair-v1'),iterations:300000,hash:'SHA-256'},base,512));
+  return {h:hex(bits.slice(0,32)),k:await crypto.subtle.importKey('raw',bits.slice(32),{name:'AES-GCM'},false,['encrypt','decrypt'])};
+}
+let PAIR_T=null;
+async function pairStart(){
+  Modal.open(`<h2 style="margin-top:0">Ajouter un appareil</h2><p class="muted"><span class="spin"></span> Préparation du code sécurisé…</p>`);
+  try{const code=b32(rnd(7)).slice(0,10);const {h,k}=await pairKey(code);const iv=rnd(12);
+    const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,te.encode(JSON.stringify(DB.sync)));
+    await rpc('pair_put',{p_hash:h,p_payload:JSON.stringify({iv:b64(iv),ct:b64(ct)})});
+    const end=Date.now()+10*60000,url=location.href.split(/[?#]/)[0];
+    Modal.open(`<h2 style="margin-top:0">Ajouter un appareil</h2>
+    <ol class="steps"><li>Sur l'autre appareil, ouvrez l'appli :<br><b style="word-break:break-all">${esc(url)}</b></li><li>Choisissez <b>« Relier à mon stock existant »</b>.</li><li>Tapez ce code :</li></ol>
+    <div class="code" style="font-size:1.7rem;margin-top:10px">${code.slice(0,5)}-${code.slice(5)}</div>
+    <p class="sub" id="pa-t" style="text-align:center;margin-top:8px"></p>
+    <p class="sub" style="margin-top:6px">Code à usage unique. Ne le donnez à personne d'autre : il ouvre l'accès à votre stock.</p>
+    <button class="btn" onclick="Modal.close()">Terminé</button>`);
+    clearInterval(PAIR_T);const tick=()=>{const e=$('pa-t');if(!e){clearInterval(PAIR_T);return;}const s=Math.max(0,Math.round((end-Date.now())/1000));
+      e.textContent=s?`Valable encore ${Math.floor(s/60)} min ${pad(s%60)} s`:'Code expiré — recommencez';if(!s)clearInterval(PAIR_T);};tick();PAIR_T=setInterval(tick,1000);
+  }catch(e){Modal.open(`<h2 style="margin-top:0">Ajouter un appareil</h2><p class="muted">Impossible de créer le code : ${errKind(e)==='offline'?'pas de connexion Internet.':esc(e.message)}</p><button class="btn" onclick="Modal.close()">Fermer</button>`);}
+}
+function pairHTML(){
+  return `<div class="lock"><div class="inner"><h1>Relier cet appareil</h1>
+  <p class="muted" style="margin:8px 0 4px">Sur l'appareil où se trouve déjà votre stock : <b>Plus › Synchronisation › Ajouter un appareil</b>. Tapez ici le code affiché.</p>
+  <form onsubmit="event.preventDefault();doPair()"><label>Code d'appairage</label>
+  <input id="pr-c" class="pin" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="XXXXX-XXXXX" style="font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.1em">
+  <div id="pr-msg" class="sub" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
+  <button class="btn" id="pr-btn">Relier</button></form>
+  <button class="btn ghost" onclick="S.lk='welcome';render()">Retour</button></div></div>`;
+}
+async function doPair(){
+  if(throttled('pr-msg'))return;const code=normRec($('pr-c').value);if(code.length!==10)return lkMsg('pr-msg','Le code contient 10 caractères (XXXXX-XXXXX).');
+  busy('pr-btn',true,'Connexion…');
+  try{const {h,k}=await pairKey(code);const r=await rpc('pair_get',{p_hash:h});
+    if(!r||!r.payload){const a=attFail();busy('pr-btn',false,'Relier');return lkMsg('pr-msg',a.until>Date.now()?failMsg(a).replace('Code incorrect','Code invalide'):"Code invalide ou expiré. Créez-en un nouveau sur l'autre appareil.");}
+    const o=JSON.parse(r.payload);const cr=JSON.parse(td.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},k,unb64(o.ct))));
+    const g=await rpc('vault_get',{p_id:cr.vid,p_token:cr.tok,p_known:0});const db=migrate(await decBlob(g.data,cr.sk));db.sync=cr;
+    attReset();S.pair={db,rev:g.rev};S.lk='paircode';render();
+  }catch(e){busy('pr-btn',false,'Relier');lkMsg('pr-msg',errKind(e)==='offline'?'Pas de connexion Internet.':'Erreur : '+e.message);}
+}
+function pairCodeHTML(){
+  const d=S.pair.db;const nm=d.moves.filter(m=>!m.del).length,nc=d.ch.filter(c=>!c.del).length;
+  return `<div class="lock"><div class="inner"><h1>Stock trouvé ✓</h1>
+  <p class="muted" style="margin:8px 0 4px">${esc(d.cfg.company||'Votre stock')} : ${nm} mouvement(s), ${nc} chantier(s). Choisissez le code qui protégera <b>cet appareil</b> (vous pouvez reprendre le même que sur l'autre).</p>
+  <form onsubmit="event.preventDefault();doPairCreate()">
+  <label>Code (6 caractères minimum)</label><input id="c-p1" class="pin" type="password" autocomplete="new-password" placeholder="Votre code">
+  <label>Confirmer le code</label><input id="c-p2" class="pin" type="password" autocomplete="new-password" placeholder="Encore une fois">
+  <div class="sub" id="c-msg" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
+  <button class="btn" id="c-btn">Terminer</button></form></div></div>`;
+}
+async function doPairCreate(){
+  const p1=$('c-p1').value,p2=$('c-p2').value;const pb=codeProblem(p1);if(pb)return lkMsg('c-msg',pb);if(p1!==p2)return lkMsg('c-msg','Les deux codes ne sont pas identiques.');
+  busy('c-btn',true,'Chiffrement…');
+  try{const dek=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);const rec=genRecovery();
+    ENV={app:'stockchantier',v:1,num:/^\d+$/.test(p1),kp:await wrapWith(dek,p1,PIN_ITER),kr:await wrapWith(dek,normRec(rec),REC_ITER)};
+    DEK=dek;DB=S.pair.db;Object.assign(CFG,{syncVid:DB.sync.vid,syncRev:S.pair.rev,syncDirty:false,syncOff:false,syncLast:Date.now(),lastBk:Date.now(),bkMod:DB.mod||Date.now()});saveCfg();
+    S.pair=null;rebuild();await save();persist();attReset();S.recKey=rec;S.recThen=null;S.lk='rec';lastAct=Date.now();render();
+  }catch(e){busy('c-btn',false,'Terminer');lkMsg('c-msg','Erreur : '+e.message);}
+}
+function syncDisableAsk(){
+  ask('Arrêter la synchronisation ?','La copie chiffrée sera supprimée du serveur. Chaque appareil garde ses données, mais ils ne se mettront plus à jour entre eux.','Arrêter la synchro',async()=>{
+    try{await rpc('vault_delete',{p_id:DB.sync.vid,p_token:DB.sync.tok});}catch(e){if(errKind(e)!=='denied')return toast(errKind(e)==='offline'?'Pas de connexion Internet':'Impossible : '+e.message);}
+    DB.sync=null;Object.assign(CFG,{syncRev:0,syncDirty:false,syncVid:''});saveCfg();SY.err='';await commit();render();toast('Synchronisation arrêtée');},true);
+}
+function syncReset(){DB.sync=null;Object.assign(CFG,{syncRev:0,syncDirty:false,syncVid:''});saveCfg();SY.err='';save();render();}
+function syncHTML(){
+  if(!syncAvailable())return `<h1>Synchronisation</h1><div class="banner warn" style="margin-top:14px">⚠️<div>Le serveur de synchronisation n'est pas encore configuré dans cette version de l'appli.</div></div>`;
+  if(!DB.sync)return `<h1>Synchronisation</h1><p class="muted" style="margin-top:4px">Le même stock sur le téléphone et l'ordinateur, mis à jour automatiquement.</p>
+   <div class="card" style="margin-top:14px"><h3>Comment ça marche</h3><ol class="steps"><li>Chaque entrée ou sortie est envoyée en quelques secondes à vos autres appareils.</li><li>Tout est <b>chiffré sur l'appareil avant l'envoi</b> : le serveur ne stocke qu'un bloc illisible.</li><li>Sans réseau, l'appli marche normalement et rattrape dès que la connexion revient.</li></ol>
+   <button class="btn" id="sy-on" onclick="syncEnable()">Activer la synchronisation</button>
+   <p class="sub" style="margin-top:8px">Ensuite : « Ajouter un appareil » pour relier l'ordinateur avec un code à usage unique.</p></div>`;
+  const bad=SY.err==='denied';
+  return `<h1>Synchronisation</h1>
+  <div class="card" style="margin-top:14px"><b id="sync-big">${syncLabel()}</b><div class="sub" style="margin-top:4px">Vérification automatique toutes les 10 secondes quand l'appli est ouverte, et à chaque ouverture.</div>
+   <button class="btn sec" onclick="syncNow('manual')">🔄 Synchroniser maintenant</button></div>
+  ${bad?`<div class="banner bad">⚠️<div>Le serveur refuse ce stock : la synchro a sans doute été arrêtée depuis un autre appareil. Vos données sont intactes ici.<br><button class="btn sm" style="margin-top:8px" onclick="syncReset()">Repartir de zéro (nouvelle synchro)</button></div></div>`:''}
+  <div class="card"><h3>Ajouter un appareil</h3><p class="muted" style="margin:4px 0">Ordinateur, tablette, nouveau téléphone… Un code à usage unique, valable 10 minutes, le relie à ce stock.</p><button class="btn" onclick="pairStart()">＋ Ajouter un appareil</button></div>
+  <div class="card"><h3>Sur cet appareil</h3><button class="btn sec" onclick="CFG.syncOff=!CFG.syncOff;saveCfg();render();if(!CFG.syncOff)syncNow('resume')">${CFG.syncOff?'▶ Reprendre la synchro':'⏸ Mettre la synchro en pause'}</button></div>
+  <div class="card"><h3>🔐 Confidentialité</h3><p class="muted" style="margin-top:4px">Le serveur ne voit jamais vos articles, quantités, chantiers ou fournisseurs : tout est chiffré (AES-256) avant de quitter l'appareil, avec une clé connue uniquement de vos appareils reliés.</p></div>
+  <div class="card" style="border-color:var(--bad)"><h3 style="color:var(--bad)">Arrêter la synchronisation</h3><p class="muted" style="margin:4px 0">Supprime la copie chiffrée du serveur. Les données restent sur chaque appareil.</p><button class="btn danger" onclick="syncDisableAsk()">Arrêter et supprimer du serveur</button></div>`;
+}
+
+/* ---------- déclencheurs ---------- */
+setInterval(()=>{if(!DB||S.lk)return;if(syncOn()&&document.visibilityState==='visible')syncNow('poll');else syncUI();applyPending();},10000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')syncFlush();else setTimeout(()=>{if(DB&&!S.lk)syncNow('focus');},60);});
+addEventListener('online',()=>{if(DB&&!S.lk)syncNow('online');});
+addEventListener('offline',()=>{SY.err='offline';syncUI();});
+document.addEventListener('focusout',()=>setTimeout(applyPending,400));
+
 /* =================== PLUS =================== */
 const dayOf=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
-const VIEWS={hist:histHTML,inv:invHTML,alerts:alertsHTML,thr:thrHTML,locs:locsHTML,items:itemsHTML,backup:backupHTML,security:secHTML,export:exportHTML,settings:settingsHTML,help:helpHTML};
+const VIEWS={sync:syncHTML,hist:histHTML,inv:invHTML,alerts:alertsHTML,thr:thrHTML,locs:locsHTML,items:itemsHTML,backup:backupHTML,security:secHTML,export:exportHTML,settings:settingsHTML,help:helpHTML};
 function plusHTML(){
   const v=S.view;if(v&&VIEWS[v])return `<button class="back" onclick="S.view=${v==='thr'?"'alerts'":'null'};render()">← ${v==='thr'?'Alertes':'Plus'}</button>`+VIEWS[v]();
   const nA=alertItems().length,nItems=DB.items.filter(i=>!i.del&&!i.hid).length;
@@ -1392,7 +1598,8 @@ function plusHTML(){
    ${mi('locs','📍','Emplacements',activeLocs().map(l=>esc(l.n)).join(', '))}
    ${mi('items','🗂️','Articles & catalogue',nItems+' articles visibles')}</div>
   <div class="card menu" style="padding:0">
-   ${mi('backup','💾','Sauvegarde & autres appareils','Dernière sauvegarde : '+ago(CFG.lastBk),needBk())}
+   ${mi('sync','🔄','Synchronisation',DB.sync?syncLabel():(syncAvailable()?'Téléphone + ordinateur, automatiquement':'Non configurée'),DB.sync&&!!SY.err)}
+   ${mi('backup','💾','Sauvegarde','Dernière sauvegarde : '+ago(CFG.lastBk),needBk())}
    ${mi('security','🔒','Sécurité','Code, verrouillage auto, clé de secours')}
    ${mi('export','🖨️','Imprimer & exporter','État du stock, fichier Excel')}
    ${mi('settings','⚙️','Réglages','Entreprise, apparence, installation')}
@@ -1514,7 +1721,7 @@ function hideSub(si,hide){const s=ICSUBS[si];const now=Date.now();DB.items.forEa
 function canShareFiles(){try{return !!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File(['x'],'x.json',{type:'application/json'})]}));}catch(e){return false;}}
 function backupHTML(){
   const ok=!needBk()&&CFG.lastBk;const since=DB.moves.filter(m=>m.ts>CFG.lastBk).length;const prevT=+localStorage.getItem(KEY_PREVT)||0;const can=canShareFiles();
-  return `<h1>Sauvegarde</h1>
+  return `<h1>Sauvegarde</h1>${DB.sync?'<p class="muted" style="margin-top:4px">La synchronisation garde déjà une copie chiffrée sur le serveur. Une sauvegarde de temps en temps reste une sécurité en plus.</p>':''}
   <div class="card" style="margin-top:14px"><div class="row"><span style="font-size:1.7rem">${ok?'✅':'⚠️'}</span><div class="grow"><b>${CFG.lastBk?'Dernière sauvegarde : '+ago(CFG.lastBk):"Aucune sauvegarde pour l'instant"}</b><div class="sub">${CFG.lastBk?since+' mouvement(s) depuis':'Faites-en une maintenant'}</div></div></div>
   ${can?`<button class="btn" onclick="exportBackup(true)">📤 Envoyer la sauvegarde (mail, Drive, WhatsApp…)</button><button class="btn sec" onclick="exportBackup(false)">⬇️ Enregistrer le fichier</button>`:`<button class="btn" onclick="exportBackup(false)">⬇️ Télécharger la sauvegarde</button>`}</div>
   <div class="card"><h3>Récupérer / synchroniser</h3><p class="muted" style="margin:6px 0 2px">Importez un fichier de sauvegarde venant d'un autre appareil (ou d'avant une perte). Vous choisirez ensuite de <b>fusionner</b> ou de <b>remplacer</b>.</p>
@@ -1575,7 +1782,7 @@ async function setNewCode(){const p1=$('nc-1').value,p2=$('nc-2').value;const pb
 async function applyImport(mode){
   if(!IMP||!IMP.db)return;const cur=localStorage.getItem(KEY);
   try{localStorage.setItem(KEY_PREV,cur);localStorage.setItem(KEY_PREVT,String(Date.now()));}catch(e){}
-  DB=mode==='merge'?mergeDB(DB,IMP.db):IMP.db;IMP=null;await commit();
+  const keep=DB.sync;DB=mode==='merge'?mergeDB(DB,IMP.db):IMP.db;if(keep)DB.sync=keep;IMP=null;await commit();
   CFG.lastBk=Date.now();CFG.bkMod=DB.mod;saveCfg();Modal.close();render();toast(mode==='merge'?'Données fusionnées ✓':'Données remplacées ✓');
 }
 function restorePrev(){
@@ -1691,6 +1898,7 @@ function helpHTML(){
   ${sec('📋 Le stock ne correspond pas','Plus › <b>Inventaire</b> : comptez et saisissez le réel, l\'appli corrige les écarts. Pour un seul article : sa fiche › « ✎ Corriger ».')}
   ${sec('⚠️ Ne jamais manquer','Plus › Alertes › <b>Régler les seuils</b>. Les articles sous le seuil apparaissent sur l\'accueil, et la liste peut être envoyée au fournisseur.')}
   ${sec('↶ Une erreur ?','Juste après une saisie, touchez « Annuler » dans le bandeau noir. Plus tard : Plus › Historique › « Annuler » sur le mouvement.')}
+  ${sec('🔄 Téléphone + ordinateur','Plus › <b>Synchronisation</b> › « Activer », puis « Ajouter un appareil » : un code à usage unique relie l\'ordinateur. Ensuite tout se met à jour tout seul en quelques secondes, dans les deux sens. Sans réseau, l\'appli continue de marcher et rattrape plus tard.')}
   ${sec('🔐 Sécurité et sauvegardes','Tout est chiffré avec votre code. Sans code ni clé de secours, personne ne peut lire les données — pas même nous. <b>Faites une sauvegarde chaque semaine</b> (Plus › Sauvegarde) et envoyez-la-vous par mail : si le téléphone est perdu, volé ou cassé, vous récupérez tout.')}`;
 }
 
@@ -1711,7 +1919,6 @@ $('file-in').addEventListener('change',onFile);
   if(!window.crypto||!crypto.subtle){$('app').innerHTML='<div class="lock"><h1>Connexion non sécurisée</h1><p class="muted" style="margin-top:8px">Ouvrez l\'application via son adresse <b>https://</b> pour que le chiffrement fonctionne.</p></div>';return;}
   S.lk=readEnv()?'unlock':'welcome';render();
 })();
-
 </script>
 </body>
 </html>
