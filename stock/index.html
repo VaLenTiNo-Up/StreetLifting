@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f4f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Stock">
+<meta name="robots" content="noindex, nofollow">
+<title>Stock Chantier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f4f2; --surface:#ffffff; --surface2:#f0f0ed; --line:#e2e1dc; --line2:#d3d2cc;
+  --txt:#1d1f22; --dim:#5f6368; --faint:#8b8f94;
+  --acc:#2f5d8a; --acc-weak:#e6eef6; --acc-txt:#ffffff;
+  --ok:#2e7d4f; --ok-weak:#e5f3ea; --warn:#a66300; --warn-weak:#fbf0dc; --bad:#b3261e; --bad-weak:#fbe7e5;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#16181b; --surface:#1f2226; --surface2:#262a2f; --line:#30353b; --line2:#3b4148;
+  --txt:#eceff2; --dim:#a3a9b0; --faint:#7d848c;
+  --acc:#6f9fd1; --acc-weak:#22303e; --acc-txt:#0e1620;
+  --ok:#5fc18a; --ok-weak:#1d3327; --warn:#e0a24a; --warn-weak:#3a2d18; --bad:#ef7a70; --bad-weak:#3d2220;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{
+  --bg:#16181b; --surface:#1f2226; --surface2:#262a2f; --line:#30353b; --line2:#3b4148;
+  --txt:#eceff2; --dim:#a3a9b0; --faint:#7d848c;
+  --acc:#6f9fd1; --acc-weak:#22303e; --acc-txt:#0e1620;
+  --ok:#5fc18a; --ok-weak:#1d3327; --warn:#e0a24a; --warn-weak:#3a2d18; --bad:#ef7a70; --bad-weak:#3d2220;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{background:var(--bg);color:var(--txt);font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  min-height:100vh;padding-bottom:calc(84px + env(safe-area-inset-bottom));font-feature-settings:'tnum' 1}
+#app{max-width:760px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px 24px}
+h1{font-size:1.45rem;font-weight:800;letter-spacing:-.01em}
+h2{font-size:1.05rem;font-weight:700;margin:22px 0 10px}
+h3{font-size:.95rem;font-weight:700}
+.sub{color:var(--dim);font-size:.8rem;line-height:1.4}
+.muted{color:var(--dim);font-size:.88rem;line-height:1.5}
+.small{font-size:.76rem}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card.flat{box-shadow:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border-radius:12px;border:1px solid transparent;
+  background:var(--acc);color:var(--acc-txt);font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;width:100%;margin-top:10px}
+.btn.sec{background:var(--surface);color:var(--txt);border-color:var(--line2)}
+.btn.ghost{background:transparent;color:var(--acc);border-color:transparent}
+.btn.danger{background:var(--bad-weak);color:var(--bad);border-color:transparent}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.sm{min-height:38px;padding:0 12px;font-size:.84rem;width:auto;margin:0}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btns .btn{margin:0}
+input,select,textarea{width:100%;min-height:48px;padding:11px 12px;border:1px solid var(--line2);border-radius:12px;background:var(--surface);color:var(--txt);font:inherit;font-size:16px}
+textarea{min-height:70px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);outline-offset:-1px;border-color:var(--acc)}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--dim);margin:12px 0 5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;border:1px solid var(--line2);background:var(--surface);color:var(--txt);border-radius:99px;padding:8px 13px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--txt);border-color:var(--txt);color:var(--bg)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-weak);color:var(--ok)} .pill.warn{background:var(--warn-weak);color:var(--warn)}
+.pill.bad{background:var(--bad-weak);color:var(--bad)} .pill.neu{background:var(--surface2);color:var(--dim)}
+.pill.acc{background:var(--acc-weak);color:var(--acc)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface2);border-radius:12px;padding:4px;gap:4px;margin-bottom:12px}
+.seg button{min-height:40px;border:none;border-radius:9px;background:transparent;color:var(--dim);font:inherit;font-weight:700;font-size:.85rem;cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--txt);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);padding:8px 6px;border-bottom:1px solid var(--line)}
+td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+/* recherche */
+.search{position:relative;margin:14px 0 8px}
+.search input{min-height:56px;padding-left:46px;padding-right:44px;font-size:17px;border-radius:14px;box-shadow:var(--shadow)}
+.search .ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.search .clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:none;border-radius:50%;background:var(--surface2);color:var(--dim);font-size:1rem;cursor:pointer}
+.item{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.item:active{background:var(--surface2)}
+.item .q{text-align:right;flex-shrink:0}
+.item .q b{display:block;font-size:1.15rem;font-weight:800;font-variant-numeric:tabular-nums}
+.item .nm{font-weight:700;font-size:.95rem;line-height:1.3}
+.locs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.loc{font-size:.72rem;background:var(--surface2);color:var(--dim);border-radius:6px;padding:2px 7px;font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+.tile b{display:block;font-size:1.5rem;font-weight:800;line-height:1.1}
+.tile span{font-size:.72rem;color:var(--dim);font-weight:600}
+.cats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.cat{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+.cat .e{font-size:1.4rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:9px;flex-shrink:0}
+.cat b{font-size:.86rem;line-height:1.2}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;margin-bottom:12px;font-size:.86rem;line-height:1.45}
+.banner.warn{background:var(--warn-weak);color:var(--warn)} .banner.info{background:var(--acc-weak);color:var(--acc)} .banner.bad{background:var(--bad-weak);color:var(--bad)}
+.banner b{color:inherit}
+/* lignes de formulaire */
+.line{display:grid;grid-template-columns:1fr 110px 40px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.line:last-child{border-bottom:none}
+.line .x{width:40px;height:40px;border:none;border-radius:10px;background:var(--surface2);color:var(--dim);font-size:1rem;cursor:pointer}
+.line input{min-height:44px;text-align:right}
+.line .picker input{text-align:left}
+.item.zero .q b{color:var(--faint)}
+.picker{position:static;min-width:0}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;background:var(--surface);border:1px solid var(--line2);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.15);max-height:320px;overflow-y:auto}
+.sugg div{padding:11px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:.9rem}
+.sugg div:last-child{border-bottom:none}
+.sugg div:hover,.sugg div.hl{background:var(--surface2)}
+.menu .mi{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line);cursor:pointer}
+.menu .mi:last-child{border-bottom:none}
+.menu .mi .e{font-size:1.2rem;width:28px;text-align:center}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--acc);font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:10px;background:none;border:none;font-family:inherit;padding:6px 0}
+/* nav */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:var(--surface);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border:none;background:none;color:var(--faint);font:inherit;font-size:.68rem;font-weight:700;cursor:pointer;border-radius:10px}
+nav button svg{width:24px;height:24px}
+nav button.on{color:var(--acc)}
+nav button.on svg{stroke-width:2.4}
+@media (min-width:900px){
+  body{padding-bottom:0;padding-left:230px}
+  nav{top:0;right:auto;width:230px;flex-direction:column;justify-content:flex-start;border-top:none;border-right:1px solid var(--line);padding:24px 12px;gap:4px}
+  nav .brand{display:block!important}
+  nav button{flex:none;flex-direction:row;gap:12px;font-size:.92rem;padding:12px 14px;justify-content:flex-start}
+  nav button.on{background:var(--acc-weak)}
+  #app{padding-top:28px}
+  .cats{grid-template-columns:repeat(3,1fr)}
+  #modal{align-items:center!important}
+  #modal .box{border-radius:18px!important}
+}
+/* modal / toast */
+#modal{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45)}
+#modal .box{width:100%;max-width:600px;max-height:90vh;overflow-y:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));animation:sheet .25s ease-out}
+@keyframes sheet{from{transform:translateY(40px);opacity:.5}}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:200;display:none;align-items:center;gap:14px;
+  background:var(--txt);color:var(--bg);padding:12px 16px;border-radius:12px;font-size:.88rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);width:max-content;max-width:min(520px,calc(100vw - 32px))}
+.toast button{background:none;border:none;color:var(--bg);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}
+@media (min-width:900px){ .toast{bottom:24px;margin-left:115px} }
+/* écrans de verrouillage / installation */
+.lock{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.lock .logo{width:64px;height:64px;border-radius:16px;background:var(--acc);color:var(--acc-txt);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.lock form{width:100%;max-width:340px}
+.lock .inner{width:100%;max-width:380px;text-align:left}
+input.pin{text-align:center;font-size:22px;letter-spacing:.25em;min-height:58px}
+input.pin::placeholder{letter-spacing:normal;font-size:16px}
+mark{background:var(--warn-weak);color:inherit;border-radius:3px;padding:0 1px}
+.line{position:relative}
+.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:48px;padding:7px 10px;border:none;border-radius:10px;background:var(--surface2);color:var(--txt);font:inherit;text-align:left;cursor:pointer}
+.pick .nm{font-weight:700;font-size:.88rem;line-height:1.25}
+.x-close{width:36px;height:36px;border:none;border-radius:50%;background:var(--surface2);color:var(--dim);font-size:1rem;cursor:pointer;flex-shrink:0}
+nav button{position:relative}
+nav .dot{position:absolute;top:5px;left:calc(50% + 7px);width:8px;height:8px;border-radius:50%;background:var(--warn)}
+nav .brand{padding:2px 14px 20px;font-weight:800;font-size:1.05rem;line-height:1.3}
+nav .brand span{display:block;font-size:.75rem;font-weight:600;color:var(--dim)}
+.grp{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 8px;font-size:.82rem;text-transform:uppercase;letter-spacing:.04em;color:var(--dim)}
+.fade{animation:fade .2s ease-out}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.kv:last-child{border-bottom:none}
+ol.steps{padding-left:20px;line-height:1.55;font-size:.88rem;color:var(--dim)}
+ol.steps li{margin:4px 0}
+ol.steps b{color:var(--txt)}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.25rem;font-weight:700;letter-spacing:.06em;background:var(--surface2);border:1px dashed var(--line2);border-radius:12px;padding:16px;text-align:center;word-break:break-all;user-select:all}
+body.locked nav{display:none}
+body.locked{padding-left:0!important}
+.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.empty{text-align:center;padding:30px 10px;color:var(--dim)}
+.empty .e{font-size:2rem;margin-bottom:6px}
+#print{display:none}
+@media print{
+  body{background:#fff;color:#000;padding:0!important}
+  #app,nav,#modal,.toast{display:none!important}
+  #print{display:block;padding:10mm;font-size:10pt}
+  #print table{font-size:9pt} #print th,#print td{border-bottom:1px solid #ccc;color:#000}
+  #print h1{font-size:15pt} #print h2{font-size:11pt;margin:12px 0 4px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="locked">
+<nav id="nav" style="display:none"></nav>
+<div id="app"></div>
+<div id="modal" onclick="if(event.target===this)Modal.close()"><div class="box" id="modal-box"></div></div>
+<div class="toast" id="toast"></div>
+<div id="print"></div>
+<input type="file" id="file-in" accept=".stock,.json,application/json" style="display:none">
+<script>
+'use strict';
+/* =========================================================
+   STOCK CHANTIER — gestion de stock pour la maçonnerie (v1)
+   Données chiffrées sur l'appareil : AES-GCM 256 bits,
+   clé protégée par le code (PBKDF2-SHA256) + clé de secours.
+   ========================================================= */
+const KEY='stockchantier_v1', KEY_PREV=KEY+'_prev', KEY_PREVT=KEY+'_prevt', KEY_ATT=KEY+'_att', KEY_CFG=KEY+'_cfg';
+const CAT_VER=1, PIN_ITER=600000, REC_ITER=200000;
+
+/* ---------- utilitaires ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/(\d),(\d)/g,'$1.$2').replace(/×/g,'x');
+const r3=x=>Math.round(x*1000)/1000;
+const fmtQ=q=>r3(+q||0).toLocaleString('fr-FR',{maximumFractionDigits:3});
+const parseQ=s=>{const v=parseFloat(String(s??'').replace(/\s/g,'').replace(',','.'));return isFinite(v)?v:NaN;};
+function hash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36);}
+function fmtDate(d){ if(!d) return ''; const t=today(); if(d===t) return "Aujourd'hui";
+  const y=new Date(); y.setDate(y.getDate()-1); const ys=y.getFullYear()+'-'+pad(y.getMonth()+1)+'-'+pad(y.getDate()); if(d===ys) return 'Hier';
+  const [Y,M,D]=d.split('-').map(Number); const dt=new Date(Y,M-1,D);
+  return dt.toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:Y===new Date().getFullYear()?undefined:'numeric'}); }
+function fmtDateLong(d){ if(!d) return ''; const [Y,M,D]=d.split('-').map(Number); return new Date(Y,M-1,D).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}); }
+function ago(ts){ if(!ts) return 'jamais'; const days=Math.floor((Date.now()-ts)/864e5); const h=new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(days<=0 && new Date(ts).toDateString()===new Date().toDateString()) return "aujourd'hui à "+h; if(days<=1) return 'hier'; return 'il y a '+days+' jours'; }
+const clean=o=>{for(const k in o) if(o[k]===undefined||o[k]===null||o[k]==='') delete o[k]; return o;};
+
+const UNITS={u:['pièce','pièces','Pièce / unité'],sac:['sac','sacs','Sac'],t:['tonne','tonnes','Tonne'],m3:['m³','m³','Mètre cube (m³)'],m2:['m²','m²','Mètre carré (m²)'],
+  ml:['ml','ml','Mètre linéaire (ml)'],pal:['palette','palettes','Palette'],bb:['big bag','big bags','Big bag'],kg:['kg','kg','Kilogramme'],L:['litre','litres','Litre'],
+  rl:['rouleau','rouleaux','Rouleau'],brr:['barre','barres','Barre'],pan:['panneau','panneaux','Panneau / plaque'],bte:['boîte','boîtes','Boîte'],pq:['paquet','paquets','Paquet / sachet'],
+  seau:['seau','seaux','Seau'],bid:['bidon','bidons','Bidon'],cart:['cartouche','cartouches','Cartouche'],pr:['paire','paires','Paire'],bot:['botte','bottes','Botte'],lot:['lot','lots','Lot']};
+const uLab=(u,q)=>{const x=UNITS[u]||[u||'',u||''];return Math.abs(+q||0)>=2?x[1]:x[0];};
+const fmtQU=(q,u)=>fmtQ(q)+' '+uLab(u,q);
+
+/* types de mouvement : [libellé, couleur] */
+const MT={in:['Entrée','ok'],dir:['Livraison chantier','acc'],ret:['Retour chantier','ok'],out:['Sortie chantier','warn'],tr:['Transfert','neu'],loss:['Perte / casse','bad'],adj:['Inventaire','neu']};
+const LT={depot:['Dépôt','🏭'],camion:['Camion','🚚'],chantier:['Stock sur chantier','🏗️'],autre:['Autre','📦']};
+
+const IC={
+  search:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  in:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>',
+  out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 20h16"/></svg>',
+  site:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18v2H3z"/><path d="M5 18a7 7 0 0 1 14 0"/><path d="M10 11V6h4v5"/></svg>',
+  menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  box:'<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></svg>'
+};
+
+/* ---------- catalogue (#catégorie | @sous-catégorie|unité|mots-clés | article[|unité]) ---------- */
+const CAT_SRC=`
+#tuiles|Tuiles & couverture|🏠
+@Tuiles canal|u|tige de botte ronde provencale courant couvert
+Tuile canal terre cuite 40 cm
+Tuile canal terre cuite 45 cm
+Tuile canal 50 cm (grand modèle)
+Tuile canal à crochet
+Tuile canal vieillie / flammée
+Tuile canal de récupération
+@Tuiles romanes|u|romane emboitement grand moule petit moule
+Tuile romane grand moule (≈10/m²)
+Tuile romane petit moule (≈13/m²)
+Tuile romane de rive gauche
+Tuile romane de rive droite
+Tuile romane demi-tuile
+Tuile romane chatière (ventilation)
+Tuile romane à douille (passage de conduit)
+@Tuiles mécaniques|u|marseille marseillaise cotes losangee mecanique emboitement
+Tuile mécanique Marseille (≈13/m²)
+Tuile mécanique grand moule (≈10/m²)
+Tuile à côtes
+Tuile losangée
+Tuile mécanique de rive
+Tuile mécanique chatière
+Tuile mécanique à douille
+@Tuiles plates|u|plate petit moule bourgogne ecaille
+Tuile plate petit moule 17×27 (≈65/m²)
+Tuile plate 16×24
+Tuile plate grand moule à emboîtement (≈20/m²)
+Tuile plate écaille
+Tuile plate de rive
+Tuile plate et demie
+Tuile plate d'arêtier
+@Tuiles béton|u|beton
+Tuile béton double romane
+Tuile béton plate
+Tuile béton de rive
+Faîtière béton
+@Ardoises|u|ardoise schiste fibrociment crochet
+Ardoise naturelle 32×22
+Ardoise naturelle 40×25
+Ardoise fibrociment 60×30
+Crochets à ardoise inox|bte
+Clous à ardoise cuivre|kg
+@Faîtage, rives & accessoires|u|faitage faitiere aretier closoir about fronton rive ecran sous toiture solin noue
+Faîtière ronde
+Faîtière angulaire
+Arêtier
+About de faîtage
+Fronton / rencontre de faîtage
+Tuile de rive universelle
+Closoir ventilé souple|rl
+Rouleau de faîtage aluminium|rl
+Crochets de tuile|bte
+Pattes de fixation de faîtière|bte
+Écran sous-toiture HPV|rl
+Bande de solin|rl
+Noue aluminium|ml
+@Plaques & bacs|u|plaque ondulee fibrociment bac acier polycarbonate sous-tuile
+Plaque fibrociment ondulée
+Plaque sous-tuile
+Bac acier|m2
+Plaque polycarbonate translucide
+#liants|Ciments, chaux & plâtre|🪣
+@Ciments|sac|ciment cem portland gris prompt
+Ciment CEM II/B 32,5 R — sac 35 kg
+Ciment CEM II/A 42,5 R — sac 35 kg
+Ciment CEM II 32,5 — sac 25 kg
+Ciment CEM I 52,5 — sac 35 kg
+Ciment blanc — sac 25 kg
+Ciment prompt (prise rapide) — sac 25 kg
+Ciment prompt — sac 5 kg
+Ciment fondu — sac 25 kg
+Ciment de maçonnerie MC 12,5 — sac 35 kg
+Ciment en vrac|t
+@Chaux|sac|chaux nhl hydraulique aerienne grasse
+Chaux hydraulique NHL 3,5 — sac 35 kg
+Chaux hydraulique NHL 5 — sac 35 kg
+Chaux hydraulique NHL 2 — sac 25 kg
+Chaux de construction HL 5 — sac 35 kg
+Chaux aérienne CL 90 — sac 25 kg
+Chaux grasse en pâte|seau
+@Plâtres|sac|platre
+Plâtre gros — sac 25 kg
+Plâtre fin — sac 25 kg
+Plâtre à projeter — sac 30 kg
+#mortiers|Mortiers, bétons & enduits|🏗️
+@Mortiers prêts à l'emploi|sac|mortier batard montage pret gacher scellement reparation refractaire jointoiement
+Mortier bâtard prêt à gâcher — sac 25 kg
+Mortier de montage — sac 25 kg
+Mortier joint mince (blocs rectifiés) — sac 25 kg
+Mortier de scellement rapide — sac 25 kg
+Mortier de réparation fibré — sac 25 kg
+Mortier réfractaire — sac 25 kg
+Mortier de jointoiement — sac 25 kg
+Mortier-colle béton cellulaire — sac 25 kg
+@Bétons|sac|beton pret fibre toupie centrale maigre proprete
+Béton prêt à l'emploi — sac 35 kg
+Béton fibré — sac 25 kg
+Béton prise rapide — sac 25 kg
+Béton toupie (centrale)|m3
+Béton de propreté (toupie)|m3
+Béton désactivé|m3
+@Chapes & ragréages|sac|chape ragreage autolissant fibre
+Chape traditionnelle prête — sac 35 kg
+Chape fluide (camion)|m3
+Ragréage autolissant intérieur — sac 25 kg
+Ragréage extérieur fibré — sac 25 kg
+@Colles & joints carrelage|sac|colle carrelage c1 c2 s1 flex joint
+Colle carrelage C1 — sac 25 kg
+Colle carrelage C2 — sac 25 kg
+Colle carrelage C2 S1 (flex) — sac 25 kg
+Colle pierre & parement — sac 25 kg
+Joint carrelage gris — sac 5 kg
+Joint carrelage blanc — sac 5 kg
+@Enduits|sac|enduit facade monocouche gratte chaux sous-enduit gobetis rebouchage cuvelage
+Enduit monocouche blanc cassé — sac 25 kg
+Enduit monocouche ton pierre — sac 25 kg
+Enduit monocouche (autre teinte) — sac 25 kg
+Enduit à la chaux de façade — sac 25 kg
+Sous-enduit / dressage — sac 25 kg
+Gobetis prêt à l'emploi — sac 25 kg
+Enduit d'imperméabilisation (cuvelage) — sac 25 kg
+Enduit de rebouchage — sac 5 kg
+Enduit de finition intérieur|seau
+#granulats|Sable, gravier & granulats|⛰️
+@Sables|t|sable 0/4 0/2 0/1 riviere carriere lave concasse
+Sable 0/4 (béton)
+Sable 0/2 (mortier, enduit)
+Sable fin 0/1 (joints)
+Sable de rivière lavé 0/4
+Sable de carrière concassé 0/4
+Sable à bâtir (sable jaune)
+Sable stabilisé (dosé ciment)
+Sable 0/4 — big bag|bb
+Sable 0/2 — big bag|bb
+Sable — sac 35 kg|sac
+@Graviers & gravillons|t|gravier gravillon roule concasse cailloux galet
+Gravillon 4/6
+Gravillon 6/10
+Gravier 10/20 (béton)
+Gravier 4/20 (béton)
+Cailloux 20/40
+Galets décoratifs 20/40
+Gravier — big bag|bb
+Gravier — sac 35 kg|sac
+@Graves & tout-venant|t|tout venant gnt grave concasse remblai empierrement ballast drainage
+Tout-venant 0/31,5
+Tout-venant 0/80
+Grave non traitée GNT 0/20
+Grave non traitée GNT 0/31,5
+Concassé 0/20
+Concassé 20/40 (drainage)
+Pierres concassées 40/80 (empierrement)
+Mélange à béton 0/20
+Grave ciment
+@Terres & remblais|m3|terre vegetale remblai demolition
+Terre végétale
+Terre de remblai
+Matériaux de démolition concassés|t
+#blocs|Blocs & briques|🧱
+@Parpaings|u|parpaing agglo agglos bloc beton creux agglomere b40 angle poteau chainage planelle
+Parpaing creux 10×20×50
+Parpaing creux 15×20×50
+Parpaing creux 20×20×50
+Parpaing creux 25×20×50
+Parpaing d'angle 20
+Parpaing poteau 20
+Bloc U chaînage / linteau 15
+Bloc U chaînage / linteau 20
+Demi-parpaing 20
+Parpaing plein 10×20×50
+Parpaing plein 20×20×50
+Parpaing rectifié 20 (joint mince)
+Planelle 5×20×50
+Planelle 7×20×50
+Parpaing 20 — palette|pal
+@Blocs à bancher|u|bancher banche soutenement
+Bloc à bancher 20×20×50
+Bloc à bancher 25×20×50
+Bloc à bancher d'angle
+@Briques|u|brique terre cuite monomur creuse pleine platriere parement refractaire verre
+Brique creuse 15 cm
+Brique creuse 20 cm
+Brique monomur 30 cm
+Brique monomur 37,5 cm
+Brique plâtrière 5 cm
+Brique pleine terre cuite
+Brique de parement
+Brique réfractaire
+Brique de verre
+@Béton cellulaire|u|beton cellulaire carreau
+Carreau béton cellulaire 7 cm
+Carreau béton cellulaire 10 cm
+Bloc béton cellulaire 20 cm
+Bloc béton cellulaire 25 cm
+Linteau béton cellulaire
+@Pierres|t|pierre moellon calcaire granit parement taille seche couvertine
+Moellons calcaire
+Pierre à bâtir
+Pierre sèche (murets)
+Pierre de taille|u
+Plaquettes de parement pierre|m2
+Couvertines / chaperons pierre|u
+#planchers|Planchers, linteaux & préfa|📐
+@Poutrelles & entrevous|u|poutrelle hourdis entrevous plancher precontrainte predalle rupteur
+Poutrelle béton précontraint|ml
+Entrevous (hourdis) béton 12 cm
+Entrevous (hourdis) béton 16 cm
+Entrevous (hourdis) béton 20 cm
+Entrevous polystyrène
+Prédalle|m2
+Rupteur thermique de plancher
+@Linteaux & appuis|u|linteau appui fenetre seuil precontraint
+Linteau béton 1,00 m
+Linteau béton 1,20 m
+Linteau béton 1,40 m
+Linteau béton 1,60 m
+Linteau béton 2,00 m
+Linteau béton 3,00 m
+Appui de fenêtre béton
+Seuil de porte béton
+@Préfabriqués béton|u|couvertine chaperon pilier chapeau
+Couvertine / chaperon béton
+Chapeau de pilier
+Pilier de clôture préfabriqué
+@Conduits & ventilation|u|boisseau conduit cheminee mitron ventilation grille aeration ramonage
+Boisseau béton 20×20
+Boisseau béton 20×30
+Boisseau terre cuite
+Mitron / chapeau de cheminée
+Trappe de ramonage
+Grille d'aération
+#acier|Acier & ferraillage|⛓️
+@Treillis soudés|pan|treillis soude st paf nappe dalle
+Treillis soudé PAF C (dallage)
+Treillis soudé PAF R
+Treillis soudé ST 10
+Treillis soudé ST 15 C
+Treillis soudé ST 20
+Treillis soudé ST 25 C
+Treillis soudé ST 25 CS
+Treillis soudé ST 40 C
+@Fers à béton HA|brr|fer ha acier rond tor barre beton arme
+Fer HA 6 — barre 6 m
+Fer HA 8 — barre 6 m
+Fer HA 10 — barre 6 m
+Fer HA 12 — barre 6 m
+Fer HA 14 — barre 6 m
+Fer HA 16 — barre 6 m
+Fer HA 20 — barre 6 m
+@Armatures façonnées|u|chainage semelle poteau raidisseur etrier cadre epingle equerre armature
+Chaînage 3 HA 8 — 6 m
+Chaînage 4 HA 10 (15×15) — 6 m
+Armature semelle filante — 6 m
+Armature poteau / raidisseur — 3 m
+Équerres d'angle HA 10
+Cadres / étriers
+Épingles
+@Fil, cales & accessoires|pq|fil ligature recuit cale distancier ecarteur chaise
+Fil à ligaturer recuit|rl
+Ligatures pré-coupées
+Cales béton / distanciers
+Écarteurs plastique
+Chaises pour treillis
+@Profilés acier|ml|ipn ipe corniere fer plat tube profile poutre
+Poutre IPN 100
+Poutre IPN 120
+Poutre IPN 140
+Poutre IPE 160
+Cornière acier
+Fer plat
+Tube acier carré
+#bois|Bois & coffrage|🪵
+@Bois de coffrage|ml|planche coffrage bastaing chevron madrier volige liteau contre-latte sapin
+Planche de coffrage 27×200
+Planche de coffrage 27×150
+Bastaing 63×175
+Chevron 63×75
+Madrier 75×225
+Volige
+Liteau 27×40
+Contre-latte
+@Panneaux|pan|panneau ctbx contreplaque osb bakelise
+Contreplaqué CTB-X 18 mm
+Panneau de coffrage bakélisé
+Panneau OSB 18 mm
+Panneau OSB 12 mm
+@Coffrages spéciaux|u|coffrage carton tube poteau polystyrene perdu bande peripherique joint dilatation
+Tube coffrage carton Ø 20 cm
+Tube coffrage carton Ø 25 cm
+Tube coffrage carton Ø 30 cm
+Coffrage perdu polystyrène
+Bande périphérique|rl
+Joint de dilatation|rl
+@Étaiement|u|etai etais fourche tete trepied poutrelle h20 serre-joint
+Étai court (≈1,6–2,9 m)
+Étai long (≈2,3–4 m)
+Tête / fourche d'étai
+Trépied d'étai
+Poutrelle bois H20
+Serre-joint de coffrage
+#etancheite|Étanchéité, drainage & isolation|💧
+@Étanchéité|rl|polyane film membrane bitume delta drainante arase feutre goudron
+Film polyane 150 µ
+Film polyane 200 µ
+Membrane bitumineuse
+Nappe à excroissances (drainante)
+Bande d'arase
+Enduit bitumineux|bid
+Étanchéité liquide|seau
+Bande butyle / alu
+@Mastics & mousses|cart|mastic silicone acrylique polyurethane mousse pu cartouche
+Mastic acrylique
+Mastic silicone
+Mastic polyuréthane (PU)
+Mastic-colle MS polymère
+Mousse expansive PU|u
+@Drainage|rl|drain agricole geotextile chaussette regard drainage
+Drain agricole Ø 100 — rouleau 50 m
+Drain avec chaussette Ø 100
+Géotextile
+Regard de drainage|u
+@Isolation|pan|isolant polystyrene pse xps laine verre roche polyurethane
+Polystyrène expansé PSE
+Polystyrène extrudé XPS
+Panneau polyuréthane PU
+Laine de verre|rl
+Laine de roche
+Isolant périphérique de dalle
+#vrd|Assainissement, réseaux & VRD|🚧
+@Tubes PVC|brr|pvc tube tuyau evacuation assainissement cr8
+Tube PVC Ø 32 — 4 m
+Tube PVC Ø 40 — 4 m
+Tube PVC Ø 100 — 4 m
+Tube PVC Ø 125 — 4 m
+Tube PVC CR8 Ø 160 — 3 m
+Tube PVC CR8 Ø 200 — 3 m
+@Raccords PVC|u|coude te culotte manchon reduction raccord colle pvc
+Coude PVC Ø 100
+Coude PVC Ø 160
+Té / culotte PVC Ø 100
+Manchon PVC Ø 100
+Réduction PVC
+Colle PVC (pot)
+@Regards & caniveaux|u|regard tampon fonte grille caniveau avaloir rehausse
+Regard béton 30×30
+Regard béton 40×40
+Regard béton 50×50
+Rehausse de regard
+Tampon fonte
+Caniveau à grille|ml
+Grille avaloir
+@Gaines & réseaux|rl|gaine tpc fourreau grillage avertisseur electricite eau telecom pehd
+Gaine TPC rouge Ø 63 (électricité)
+Gaine TPC rouge Ø 90 (électricité)
+Gaine TPC verte Ø 63 (télécom)
+Gaine TPC bleue (eau)
+Grillage avertisseur
+Tube PEHD eau Ø 25
+@Bordures & pavés|u|bordure p1 t2 a2 pave autobloquant dalle trottoir
+Bordure T2
+Bordure P1
+Bordure A2
+Pavé autobloquant béton|m2
+Pavés granit / grès|t
+Dalle béton extérieure|m2
+#carrelage|Carrelage & extérieurs|🔲
+@Carrelage|m2|carrelage sol faience gres cerame plinthe croisillon
+Carrelage sol intérieur
+Carrelage extérieur antidérapant
+Faïence murale
+Plinthes carrelage|ml
+Croisillons / cales|pq
+@Aménagement extérieur|u|margelle dalle terrasse bordure jardin
+Margelle
+Dalle de terrasse|m2
+Bordure de jardin
+#plaques|Plaques & cloisons|📏
+@Plaques de plâtre|pan|placo ba13 plaque platre hydro
+Plaque BA13 standard
+Plaque BA13 hydro
+@Ossatures & joints|brr|rail montant fourrure bande joint
+Rail 48
+Montant 48
+Fourrure F530
+Bande à joint|rl
+Enduit à joint — sac 25 kg|sac
+#fixation|Fixation & quincaillerie|🔩
+@Chevilles & vis|bte|cheville vis tirefond nylon metallique beton
+Chevilles nylon Ø 6
+Chevilles nylon Ø 8
+Chevilles nylon Ø 10
+Chevilles métalliques à expansion
+Vis à bois (assortiment)
+Tirefonds
+Vis à béton
+@Ancrages|u|goujon tige filetee scellement chimique ancrage ecrou rondelle
+Goujons d'ancrage M10|bte
+Goujons d'ancrage M12|bte
+Tige filetée M8 — 1 m
+Tige filetée M10 — 1 m
+Tige filetée M12 — 1 m
+Scellement chimique|cart
+Écrous & rondelles (assortiment)|bte
+@Pointes & clous|kg|clou pointe tete plate
+Pointes tête plate 70 mm
+Pointes tête plate 100 mm
+Clous à béton|bte
+@Ferrures|u|equerre patte scellement feuillard sabot connecteur
+Équerres de fixation
+Pattes à scellement
+Feuillard perforé|rl
+Sabots de charpente
+#produits|Produits & adjuvants|🧴
+@Adjuvants|bid|adjuvant plastifiant fluidifiant antigel accelerateur retardateur hydrofuge resine fibres
+Plastifiant / fluidifiant
+Antigel / accélérateur de prise
+Retardateur de prise
+Hydrofuge de masse
+Résine d'accrochage
+Fibres polypropylène|pq
+@Traitements & nettoyage|bid|huile decoffrage hydrofuge anti-mousse fongicide decapant laitance primaire cure
+Huile de décoffrage
+Hydrofuge de surface
+Anti-mousse / fongicide
+Décapant ciment / laitance
+Primaire d'accrochage
+Produit de cure béton
+#consommables|Consommables|📦
+@Disques & forets|u|disque diamant tronconner meuleuse foret sds burin couronne
+Disque diamant Ø 125
+Disque diamant Ø 230
+Disque diamant Ø 300/350 (découpeuse)
+Disque à tronçonner métal Ø 125
+Disque à tronçonner métal Ø 230
+Foret SDS+ béton Ø 6
+Foret SDS+ béton Ø 8
+Foret SDS+ béton Ø 10
+Foret SDS+ béton Ø 12
+Foret SDS+ béton Ø 16
+Burin / pointerolle SDS
+Couronne / trépan béton
+@Chantier|u|sac gravats big bag bache ruban cordeau bombe tracage film poubelle
+Sacs à gravats
+Big bag vide
+Bâche de protection
+Ruban de signalisation|rl
+Cordeau traceur + poudre
+Bombe de traçage
+Film étirable|rl
+Sacs poubelle|rl
+#outillage|Outillage & matériel|🔨
+@Outillage à main|u|truelle taloche platoir lisseuse regle niveau fil plomb cordeau seau auge pelle pioche masse massette burin marteau tenaille brouette rateau metre equerre fouet
+Truelle
+Taloche
+Platoir / lisseuse
+Règle aluminium 2 m
+Règle aluminium 3 m
+Niveau à bulle
+Fil à plomb
+Cordeau
+Seau de maçon
+Auge
+Pelle
+Pioche
+Masse
+Massette
+Burin / ciseau
+Marteau de coffreur
+Tenaille
+Brouette
+Râteau
+Mètre ruban
+Décamètre
+Équerre de maçon
+Fouet malaxeur
+@Électroportatif|u|perforateur burineur meuleuse scie malaxeur visseuse laser aspirateur batterie chargeur rallonge projecteur piqueur decoupeuse
+Perforateur SDS+
+Perforateur-burineur SDS max
+Marteau-piqueur / démolisseur
+Meuleuse Ø 125
+Meuleuse Ø 230
+Découpeuse thermique
+Scie sur table / scie à eau
+Malaxeur électrique
+Visseuse-perceuse
+Laser rotatif + trépied
+Laser lignes
+Aspirateur de chantier
+Batteries
+Chargeurs
+Rallonge / enrouleur
+Projecteur LED
+@Gros matériel|u|betonniere echafaudage treteau echelle plaque vibrante groupe electrogene nettoyeur pervibrateur dame monte diable
+Bétonnière
+Échafaudage (éléments)
+Tréteaux
+Échelle
+Plaque vibrante
+Pervibrateur (aiguille vibrante)
+Dame sauteuse
+Groupe électrogène
+Nettoyeur haute pression
+Monte-matériaux
+Diable / chariot
+@Sécurité & balisage|u|garde-corps barriere panneau signalisation extincteur trousse secours
+Garde-corps
+Barrière de chantier
+Panneau de signalisation
+Extincteur
+Trousse de secours
+#epi|EPI (protection)|🦺
+@Protection individuelle|u|casque gants lunettes bouchons masque ffp2 ffp3 chaussures securite gilet genouilleres harnais
+Casque de chantier
+Gants de manutention|pr
+Gants nitrile / enduits|pr
+Lunettes de protection
+Bouchons d'oreilles|bte
+Casque anti-bruit
+Masques FFP2|bte
+Masques FFP3|bte
+Chaussures de sécurité|pr
+Gilet haute visibilité
+Genouillères|pr
+Harnais antichute
+#divers|Divers|📁
+@Divers|u|autre divers
+`;
+const CATS=(()=>{const cats=[];let c=null,s=null;
+  CAT_SRC.split('\n').forEach(l=>{l=l.trim();if(!l)return;
+    if(l[0]==='#'){const [id,n,e]=l.slice(1).split('|');c={id,n,e,subs:[]};cats.push(c);}
+    else if(l[0]==='@'){const [n,u,k]=l.slice(1).split('|');s={n,u,k:k||'',items:[]};c.subs.push(s);}
+    else{const [n,u]=l.split('|');s.items.push({n,u:u||s.u});}});
+  return cats;})();
+const CAT=Object.fromEntries(CATS.map(c=>[c.id,c]));
+const SUBK={}; CATS.forEach(c=>c.subs.forEach(s=>SUBK[c.id+'|'+s.n]=s.k));
+
+/* ---------- état global ---------- */
+let DB=null, DEK=null, ENV=null;
+let ITEM={}, LOC={}, CH={}, STOCK={}, GROUPS=[], HAY=new Map(), IDX=new Map();
+const S={tab:'stock',q:'',cat:null,sub:null,only:false,loc:'all',lim:60,view:null,chId:null,chTab:'run',lk:null,fin:null,fout:null,inv:null,icat:null,hf:'all',hq:'',hlim:40};
+let CFG=Object.assign({lockMin:5,theme:'auto',lastBk:0,bkMod:0,persist:false},(()=>{try{return JSON.parse(localStorage.getItem(KEY_CFG))||{};}catch(e){return {};}})());
+const saveCfg=()=>{try{localStorage.setItem(KEY_CFG,JSON.stringify(CFG));}catch(e){}};
+
+function seedItems(){const out=[];CATS.forEach(c=>c.subs.forEach(s=>s.items.forEach(it=>out.push({id:'k'+hash(c.id+'|'+it.n),n:it.n,c:c.id,s:s.n,u:it.u,min:0,up:0}))));return out;}
+function freshDB(company){return {v:1,catVer:CAT_VER,cfg:{company:company||'',up:0},items:seedItems(),
+  locs:[{id:'dep',n:'Dépôt',ty:'depot',up:0},{id:'cam1',n:'Camion',ty:'camion',up:0}],ch:[],moves:[],sups:[],created:Date.now(),mod:Date.now()};}
+function migrate(db){db.items=db.items||[];db.locs=db.locs||[];db.ch=db.ch||[];db.moves=db.moves||[];db.sups=db.sups||[];db.cfg=db.cfg||{company:''};
+  if((db.catVer||0)<CAT_VER){const have=new Set(db.items.map(i=>i.id));seedItems().forEach(i=>{if(!have.has(i.id))db.items.push(i);});db.catVer=CAT_VER;}
+  return db;}
+
+function rebuild(){
+  ITEM={};IDX=new Map();DB.items.forEach((i,k)=>{ITEM[i.id]=i;IDX.set(i.id,k);});LOC={};DB.locs.forEach(l=>LOC[l.id]=l);CH={};DB.ch.forEach(c=>CH[c.id]=c);HAY=new Map();
+  STOCK={};
+  for(const m of DB.moves){ if(m.del) continue;
+    const add=(l,q)=>{if(!l)return;const o=STOCK[m.i]||(STOCK[m.i]={});o[l]=(o[l]||0)+q;};
+    switch(m.t){case 'in':case 'ret':case 'adj':add(m.to,m.q);break;case 'out':case 'loss':add(m.fr,-m.q);break;case 'tr':add(m.fr,-m.q);add(m.to,m.q);break;}
+  }
+  for(const i in STOCK){for(const l in STOCK[i]){STOCK[i][l]=r3(STOCK[i][l]);if(STOCK[i][l]===0)delete STOCK[i][l];}if(!Object.keys(STOCK[i]).length)delete STOCK[i];}
+  const gm=new Map();
+  for(const m of DB.moves){let G=gm.get(m.g);if(!G){G={g:m.g,ts:m.ts,d:m.d,t:m.t,fr:m.fr,to:m.to,ch:m.ch,sup:m.sup,ref:m.ref,no:m.no,del:true,lines:[]};gm.set(m.g,G);}G.lines.push(m);if(!m.del)G.del=false;}
+  GROUPS=[...gm.values()].sort((a,b)=>(b.d||'').localeCompare(a.d||'')||b.ts-a.ts);
+}
+const qAt=(i,l)=>(STOCK[i]&&STOCK[i][l])||0;
+const qTot=i=>{const o=STOCK[i];if(!o)return 0;let t=0;for(const l in o)t+=o[l];return r3(t);};
+const qShown=i=>S.loc==='all'?qTot(i):qAt(i,S.loc);
+const activeLocs=()=>DB.locs.filter(l=>!l.del&&!l.arch);
+const defLoc=()=>(activeLocs()[0]||{}).id||'';
+const chList=(withDone)=>DB.ch.filter(c=>!c.del&&(withDone||c.st!=='done')).sort((a,b)=>(a.st==='done')-(b.st==='done')||(b.up||0)-(a.up||0));
+function stat(it){const q=qTot(it.id);if(q<0)return ['Négatif','bad'];if(q===0)return it.min?['Rupture','bad']:['Pas en stock','neu'];if(it.min&&q<=it.min)return ['Stock bas','warn'];return ['En stock','ok'];}
+const pill=s=>`<span class="pill ${s[1]}">${s[0]}</span>`;
+const alertItems=()=>DB.items.filter(it=>!it.del&&it.min>0&&qTot(it.id)<=it.min).sort((a,b)=>qTot(a.id)/a.min-qTot(b.id)/b.min);
+const negItems=()=>DB.items.filter(it=>!it.del&&STOCK[it.id]&&Object.values(STOCK[it.id]).some(v=>v<0));
+const nInStock=()=>Object.keys(STOCK).filter(i=>qTot(i)>0&&ITEM[i]&&!ITEM[i].del).length;
+function subsOf(cid){const c=CAT[cid];const out=c?c.subs.map(s=>s.n):[];DB.items.forEach(it=>{if(it.c===cid&&!it.del&&!out.includes(it.s))out.push(it.s);});return out;}
+
+/* ---------- recherche ---------- */
+function hayOf(it){let h=HAY.get(it.id);if(!h){h=norm([it.n,it.s,CAT[it.c]?.n,SUBK[it.c+'|'+it.s]||'',it.ref||'',it.note||''].join(' '));HAY.set(it.id,h);}return h;}
+function search(q,pool){
+  const toks=norm(q).split(/\s+/).filter(Boolean);if(!toks.length)return pool.slice();
+  const out=[];const base=toks.map(t=>t.length>3&&/[sx]$/.test(t)?t.slice(0,-1):t);
+  for(const it of pool){const h=hayOf(it);let ok=true;
+    for(let k=0;k<toks.length;k++){if(!(h.includes(toks[k])||h.includes(base[k]))){ok=false;break;}}
+    if(!ok)continue;
+    const nn=norm(it.n),nw=words(nn),sw=words(norm(it.s+' '+(SUBK[it.c+'|'+it.s]||'')));let sc=0;
+    for(const t of base){if(nw.includes(t))sc+=3;else if(nw.some(w=>w.startsWith(t)))sc+=2;else if(nn.includes(t))sc+=1;
+      if(sw.some(w=>w.startsWith(t)))sc+=1;}
+    const fn=(nn.match(/\d+(?:\.\d+)?/)||[])[0];if(fn&&toks.includes(fn))sc+=1;
+    if(nn.startsWith(base[0]))sc+=2;if(qTot(it.id)>0)sc+=6;if(it.hid)sc-=4;
+    out.push([sc,it]);}
+  return out.sort((a,b)=>b[0]-a[0]||(IDX.get(a[1].id)??1e9)-(IDX.get(b[1].id)??1e9)).map(x=>x[1]);
+}
+const words=s=>s.split(/[^a-z0-9.\/+]+|x(?=\d)/).filter(Boolean);
+function hl(s,q){q=q??S.q;const toks=norm(q).split(/\s+/).filter(Boolean);if(!toks.length)return esc(s);
+  const n=norm(s);if(n.length!==s.length)return esc(s);const mk=new Uint8Array(s.length);
+  for(const t of toks){let i=n.indexOf(t);while(i>=0){mk.fill(1,i,i+t.length);i=n.indexOf(t,i+t.length);}}
+  let o='',on=0;for(let i=0;i<s.length;i++){if(mk[i]&&!on){o+='<mark>';on=1;}if(!mk[i]&&on){o+='</mark>';on=0;}o+=esc(s[i]);}if(on)o+='</mark>';return o;}
+
+/* ---------- chiffrement ---------- */
+const te=new TextEncoder(), td=new TextDecoder();
+const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+function b64(buf){const u=buf instanceof Uint8Array?buf:new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);}
+function unb64(s){const b=atob(s);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+async function kek(secret,salt,it){const base=await crypto.subtle.importKey('raw',te.encode(secret),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:it,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['wrapKey','unwrapKey']);}
+async function wrapWith(dek,secret,it){const salt=rnd(16),iv=rnd(12);const k=await kek(secret,salt,it);const ct=await crypto.subtle.wrapKey('raw',dek,k,{name:'AES-GCM',iv});return {s:b64(salt),iv:b64(iv),ct:b64(ct),it};}
+async function unwrapWith(w,secret){const k=await kek(secret,unb64(w.s),w.it);return crypto.subtle.unwrapKey('raw',unb64(w.ct),k,{name:'AES-GCM',iv:unb64(w.iv)},{name:'AES-GCM',length:256},true,['encrypt','decrypt']);}
+async function decryptData(env,dek){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(env.d.iv)},dek,unb64(env.d.ct));return JSON.parse(td.decode(pt));}
+const B32='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+function genRecovery(){const b=rnd(20);let bits=0,val=0,out='';for(const x of b){val=((val<<8)|x)&0xFFFFFF;bits+=8;while(bits>=5){out+=B32[(val>>>(bits-5))&31];bits-=5;}}return out.match(/.{4}/g).join('-');}
+const normRec=s=>String(s||'').toUpperCase().replace(/[^0-9A-Z]/g,'').replace(/O/g,'0').replace(/[IL]/g,'1').replace(/U/g,'V');
+/* ouvre une enveloppe avec le code OU la clé de secours */
+async function openEnv(env,secret){let dek=null,viaRec=false;const r=normRec(secret);
+  if(r.length===32&&env.kr){try{dek=await unwrapWith(env.kr,r);viaRec=true;}catch(e){}}
+  if(!dek)dek=await unwrapWith(env.kp,secret);
+  return {dek,viaRec};}
+function readEnv(){try{const e=JSON.parse(localStorage.getItem(KEY));return e&&e.kp&&e.d?e:null;}catch(e){return null;}}
+function codeProblem(c){if(!c||c.length<6)return 'Le code doit faire au moins 6 caractères.';
+  if(/^(.)\1+$/.test(c))return 'Code trop simple (un seul chiffre répété).';
+  const seq='0123456789012345678909876543210987654321';if(/^\d+$/.test(c)&&seq.includes(c))return 'Code trop simple (suite de chiffres).';
+  if(['123123','121212','azerty','qwerty','motdepasse','password'].includes(c.toLowerCase()))return 'Code trop simple.';return '';}
+
+/* ---------- enregistrement ---------- */
+let saving=Promise.resolve();
+function save(){const data=JSON.stringify(DB),dek=DEK,env=ENV;if(!dek||!env)return saving;
+  saving=saving.then(async()=>{const iv=rnd(12);const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},dek,te.encode(data));
+    env.d={iv:b64(iv),ct:b64(ct)};env.at=Date.now();const s=JSON.stringify(env);
+    try{const cur=localStorage.getItem(KEY);const pt=+localStorage.getItem(KEY_PREVT)||0;
+      if(cur&&Date.now()-pt>20*3600e3){try{localStorage.setItem(KEY_PREV,cur);localStorage.setItem(KEY_PREVT,String(Date.now()));}catch(e){localStorage.removeItem(KEY_PREV);}}
+      try{localStorage.setItem(KEY,s);}catch(e){localStorage.removeItem(KEY_PREV);localStorage.setItem(KEY,s);}
+    }catch(e){console.error(e);toast("⚠️ Impossible d'enregistrer : mémoire de l'appareil pleine ?");}
+  }).catch(e=>{console.error(e);toast('⚠️ Erreur de chiffrement');});
+  return saving;}
+function commit(){DB.mod=Date.now();rebuild();return save();}
+function persist(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(ok=>{CFG.persist=!!ok;saveCfg();});}catch(e){}}
+
+/* ---------- fusion (import d'une sauvegarde) ---------- */
+function mergeById(a,b){const m=new Map();(a||[]).forEach(x=>m.set(x.id,x));(b||[]).forEach(x=>{const y=m.get(x.id);if(!y||(x.up||0)>(y.up||0))m.set(x.id,x);});return [...m.values()];}
+function mergeDB(a,b){const r=Object.assign({},a);r.items=mergeById(a.items,b.items);r.locs=mergeById(a.locs,b.locs);r.ch=mergeById(a.ch,b.ch);
+  r.moves=mergeById(a.moves,b.moves).sort((x,y)=>x.ts-y.ts);r.sups=[...new Set([...(a.sups||[]),...(b.sups||[])])];
+  if((b.cfg?.up||0)>(a.cfg?.up||0))r.cfg=b.cfg;r.created=Math.min(a.created||Date.now(),b.created||Date.now());return r;}
+
+/* ---------- interface : modale, toast, confirmation ---------- */
+const Modal={open(h){$('modal-box').innerHTML=h;$('modal').style.display='flex';$('modal-box').scrollTop=0;},close(){$('modal').style.display='none';$('modal-box').innerHTML='';}};
+let toastT;
+function toast(msg,act,fn,ms){const t=$('toast');t.innerHTML='<span>'+esc(msg)+'</span>'+(act?`<button id="toast-act">${esc(act)}</button>`:'');t.style.display='flex';
+  if(act)$('toast-act').onclick=()=>{t.style.display='none';fn();};clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',ms||(act?7000:2800));}
+let _cf=null;
+function ask(title,html,ok,fn,danger){_cf=fn;Modal.open(`<h2 style="margin-top:0">${esc(title)}</h2><div class="muted">${html}</div>
+  <div class="btns" style="margin-top:18px"><button class="btn sec" onclick="Modal.close()">Retour</button><button class="btn ${danger?'danger':''}" onclick="const f=_cf;Modal.close();f&&f()">${esc(ok)}</button></div>`);}
+function copyTxt(t){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Copié ✓')).catch(()=>toast('Copie impossible — sélectionnez le texte'));}
+function download(name,txt,type){const url=URL.createObjectURL(new Blob([txt],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+function applyTheme(){if(CFG.theme==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',CFG.theme);}
+
+/* =================== ÉCRANS DE VERROUILLAGE =================== */
+function lockHTML(){
+  switch(S.lk){
+  case 'welcome': return `<div class="lock"><div class="logo">${IC.box}</div><h1>Stock Chantier</h1>
+    <p class="muted" style="max-width:380px;margin:8px auto 26px">Gestion de stock pour la maçonnerie : recherche rapide, entrées, sorties par chantier, plusieurs lieux de stockage. Vos données restent <b>chiffrées sur votre appareil</b>.</p>
+    <div style="width:100%;max-width:340px"><button class="btn" onclick="S.lk='create';render()">Créer mon stock</button>
+    <button class="btn sec" onclick="pickFile('restore')">Restaurer une sauvegarde</button>
+    <p class="sub" style="margin-top:16px">Le stock existe déjà sur un autre appareil ? Là-bas : <b>Plus › Sauvegarde › Envoyer</b>. Ici : <b>Restaurer une sauvegarde</b>.</p></div></div>`;
+  case 'create': return `<div class="lock"><div class="inner"><h1>Créer votre stock sécurisé</h1>
+    <p class="muted" style="margin:8px 0 4px">Choisissez un code personnel. Il sera demandé à chaque ouverture et sert à <b>chiffrer</b> toutes vos données. Ne le donnez à personne.</p>
+    <form onsubmit="event.preventDefault();doCreate()">
+    <label>Nom de l'entreprise (facultatif)</label><input id="c-co" autocomplete="organization" placeholder="Ex. Maçonnerie Martin">
+    <label>Code (6 caractères minimum)</label><input id="c-p1" class="pin" type="password" autocomplete="new-password" placeholder="Votre code">
+    <label>Confirmer le code</label><input id="c-p2" class="pin" type="password" autocomplete="new-password" placeholder="Encore une fois">
+    <div class="sub" id="c-msg" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
+    <button class="btn" id="c-btn">Créer</button></form>
+    <button class="btn ghost" onclick="S.lk='welcome';render()">Retour</button></div></div>`;
+  case 'rec': return `<div class="lock"><div class="inner"><h1>Votre clé de secours</h1>
+    <p class="muted" style="margin:8px 0 14px">Si vous oubliez votre code, cette clé est le <b>seul moyen</b> de récupérer vos données. Écrivez-la sur papier (ou imprimez-la) et rangez-la en lieu sûr, <b>pas dans le téléphone</b>.</p>
+    <div class="code">${esc(S.recKey)}</div>
+    <div class="btns" style="margin-top:10px"><button class="btn sec" onclick="copyTxt(S.recKey)">Copier</button><button class="btn sec" onclick="printRec(S.recKey)">Imprimer</button></div>
+    <label style="display:flex;gap:10px;align-items:center;margin-top:18px;font-size:.92rem;color:var(--txt)"><input type="checkbox" id="rec-ok" style="width:22px;min-height:22px;height:22px"> J'ai noté ma clé de secours</label>
+    <button class="btn" onclick="if(!$('rec-ok').checked){toast('Cochez la case après avoir noté la clé');return;}S.recKey=null;S.lk='locs';render()">Continuer</button></div></div>`;
+  case 'locs': { const L=S.tmpLocs||(S.tmpLocs=DB.locs.map(l=>({id:l.id,n:l.n,ty:l.ty})));
+    return `<div class="lock"><div class="inner"><h1>Vos lieux de stockage</h1>
+    <p class="muted" style="margin:8px 0 6px">Où rangez-vous votre matériel ? Ajoutez un camion, un garage, un stock laissé sur chantier… Modifiable plus tard dans <b>Plus › Emplacements</b>.</p>
+    ${L.map((l,k)=>`<div class="row" style="margin-top:10px"><select style="width:130px;flex-shrink:0" onchange="S.tmpLocs[${k}].ty=this.value">${Object.entries(LT).map(([v,x])=>`<option value="${v}" ${l.ty===v?'selected':''}>${x[1]} ${x[0].replace('Stock sur chantier','Chantier')}</option>`).join('')}</select><input value="${esc(l.n)}" oninput="S.tmpLocs[${k}].n=this.value" placeholder="Nom">${L.length>1?`<button class="x-close" onclick="S.tmpLocs.splice(${k},1);render()">✕</button>`:''}</div>`).join('')}
+    <button class="btn ghost" onclick="S.tmpLocs.push({n:'Camion '+(S.tmpLocs.filter(x=>x.ty==='camion').length+1),ty:'camion'});render()">＋ Ajouter un lieu</button>
+    <button class="btn" onclick="finishLocs()">Commencer</button></div></div>`; }
+  case 'forgot': return `<div class="lock"><div class="inner"><h1>Code oublié</h1>
+    <p class="muted" style="margin:8px 0 4px">Entrez la clé de secours notée à la création (format XXXX-XXXX-…), puis choisissez un nouveau code.</p>
+    <form onsubmit="event.preventDefault();doForgot()">
+    <label>Clé de secours</label><input id="f-k" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX-XXXX-…" style="font-family:ui-monospace,Menlo,Consolas,monospace">
+    <label>Nouveau code</label><input id="f-p1" class="pin" type="password" autocomplete="new-password">
+    <label>Confirmer le nouveau code</label><input id="f-p2" class="pin" type="password" autocomplete="new-password">
+    <div class="sub" id="f-msg" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
+    <button class="btn" id="f-btn">Valider</button></form>
+    <button class="btn ghost" onclick="S.lk='unlock';render()">Retour</button></div></div>`;
+  case 'newcode': return `<div class="lock"><div class="logo">${IC.box}</div><h1>Presque fini</h1><p class="muted" style="margin:8px 0 18px">Choisissez le code qui protégera cet appareil.</p><button class="btn" style="max-width:340px" onclick="openImportNewCode()">Choisir mon code</button></div>`;
+  default: { const env=readEnv();
+    return `<div class="lock"><div class="logo">${IC.lock.replace(/18/g,'30')}</div><h1>Stock Chantier</h1>
+    <p class="sub" style="margin:6px 0 22px">Données chiffrées · accès protégé</p>
+    <form onsubmit="event.preventDefault();doUnlock()"><input id="pin" class="pin" type="password" autocomplete="current-password" inputmode="${env&&env.num?'numeric':'text'}" placeholder="Votre code">
+    <div id="lk-msg" class="sub" style="min-height:20px;margin-top:8px;color:var(--bad)"></div>
+    <button class="btn" id="lk-btn">Déverrouiller</button></form>
+    <button class="btn ghost" style="max-width:340px" onclick="S.lk='forgot';render()">Code oublié ?</button></div>`; }
+  }
+}
+function lkMsg(id,t){const e=$(id);if(e)e.textContent=t;}
+function busy(id,on,label){const b=$(id);if(!b)return;b.disabled=on;b.innerHTML=on?'<span class="spin"></span> '+label:label;}
+function throttled(msgId){const a=attGet();if(a.until>Date.now()){lkMsg(msgId,`Trop d'essais. Réessayez dans ${Math.ceil((a.until-Date.now())/1000)} s.`);return true;}return false;}
+function attGet(){try{return JSON.parse(localStorage.getItem(KEY_ATT))||{n:0,until:0};}catch(e){return {n:0,until:0};}}
+function attFail(){const a=attGet();a.n++;if(a.n>=5)a.until=Date.now()+Math.min(30000*2**(a.n-5),15*60000);localStorage.setItem(KEY_ATT,JSON.stringify(a));return a;}
+function attReset(){localStorage.removeItem(KEY_ATT);}
+function failMsg(a){return a.until>Date.now()?`Code incorrect. Trop d'essais : attendez ${Math.ceil((a.until-Date.now())/1000)} s.`:`Code incorrect.${a.n>=3?' Encore '+(5-a.n)+' essai(s) avant blocage temporaire.':''}`;}
+
+async function doCreate(){
+  const co=$('c-co').value.trim(),p1=$('c-p1').value,p2=$('c-p2').value;
+  const pb=codeProblem(p1);if(pb)return lkMsg('c-msg',pb);if(p1!==p2)return lkMsg('c-msg','Les deux codes ne sont pas identiques.');
+  busy('c-btn',true,'Chiffrement…');
+  try{const dek=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);const rec=genRecovery();
+    ENV={app:'stockchantier',v:1,num:/^\d+$/.test(p1),kp:await wrapWith(dek,p1,PIN_ITER),kr:await wrapWith(dek,normRec(rec),REC_ITER)};
+    DEK=dek;DB=freshDB(co);rebuild();await save();persist();attReset();
+    S.recKey=rec;S.lk='rec';lastAct=Date.now();render();
+  }catch(e){console.error(e);busy('c-btn',false,'Créer');lkMsg('c-msg','Erreur : '+e.message);}
+}
+function finishLocs(){
+  const L=(S.tmpLocs||[]).filter(l=>l.n.trim());if(!L.length)return toast('Gardez au moins un lieu de stockage');
+  let dep=0,cam=0;
+  DB.locs=L.map(l=>{let id=l.id;if(!id){if(l.ty==='depot'&&!dep&&!DB.locs.some(x=>x.id==='dep'))id='dep';else if(l.ty==='camion'&&!cam&&!DB.locs.some(x=>x.id==='cam1'))id='cam1';else id=uid();}
+    if(l.ty==='depot')dep++;if(l.ty==='camion')cam++;return {id,n:l.n.trim(),ty:l.ty,up:Date.now()};});
+  S.tmpLocs=null;S.lk=null;S.tab='stock';commit();render();
+  Modal.open(`<h2 style="margin-top:0">Bienvenue 👷</h2><div class="muted" style="line-height:1.6">
+   <p>• <b>Stock</b> : tapez un mot (« ciment », « romane », « 0/4 ») pour voir tout de suite ce que vous avez et où.</p>
+   <p>• <b>Entrée</b> : à chaque achat ou livraison.</p>
+   <p>• <b>Sortie</b> : à chaque fois que vous prenez du matériel pour un chantier (ou pour le déplacer dépôt → camion).</p>
+   <p>• Le catalogue contient déjà plus de 400 articles rangés par catégorie. Il manque quelque chose ? Tapez-le et « Créer l'article ».</p>
+   <p>• Pensez à faire une <b>sauvegarde</b> chaque semaine (Plus › Sauvegarde).</p></div>
+   <button class="btn" onclick="Modal.close()">C'est parti</button>`);
+}
+async function doUnlock(){
+  if(throttled('lk-msg'))return;const code=$('pin').value;if(!code)return;
+  const env=readEnv();if(!env){S.lk='welcome';render();return;}
+  busy('lk-btn',true,'Déverrouillage…');let dek;
+  try{dek=await unwrapWith(env.kp,code);}
+  catch(e){const a=attFail();busy('lk-btn',false,'Déverrouiller');$('pin').value='';const f=document.querySelector('.lock form');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');lkMsg('lk-msg',failMsg(a));if(navigator.vibrate)try{navigator.vibrate(120);}catch(_){}return;}
+  attReset();
+  let db=null,fromPrev=false;
+  try{db=await decryptData(env,dek);}catch(e){try{const p=JSON.parse(localStorage.getItem(KEY_PREV));db=await decryptData(p,dek);fromPrev=true;}catch(_){}}
+  if(!db){busy('lk-btn',false,'Déverrouiller');lkMsg('lk-msg',"Données endommagées sur cet appareil. Restaurez une sauvegarde (Code oublié ? › ou réinstallez).");return;}
+  ENV=env;DEK=dek;const before=db.catVer;DB=migrate(db);rebuild();if(before!==DB.catVer||fromPrev)save();
+  S.lk=null;lastAct=Date.now();persist();render();
+  if(fromPrev)toast('Données récupérées depuis la copie automatique de la veille');
+}
+async function doForgot(){
+  if(throttled('f-msg'))return;const k=normRec($('f-k').value),p1=$('f-p1').value,p2=$('f-p2').value;
+  if(k.length!==32)return lkMsg('f-msg','La clé de secours doit contenir 32 caractères (hors tirets).');
+  const pb=codeProblem(p1);if(pb)return lkMsg('f-msg',pb);if(p1!==p2)return lkMsg('f-msg','Les deux codes ne sont pas identiques.');
+  busy('f-btn',true,'Vérification…');const env=readEnv();let dek;
+  try{dek=await unwrapWith(env.kr,k);}catch(e){const a=attFail();busy('f-btn',false,'Valider');lkMsg('f-msg',a.until>Date.now()?failMsg(a):'Clé de secours incorrecte.');return;}
+  try{const db=await decryptData(env,dek);ENV=env;DEK=dek;ENV.kp=await wrapWith(dek,p1,PIN_ITER);ENV.num=/^\d+$/.test(p1);DB=migrate(db);rebuild();await save();attReset();
+    S.lk=null;lastAct=Date.now();render();toast('Nouveau code enregistré ✓');}
+  catch(e){busy('f-btn',false,'Valider');lkMsg('f-msg','Données illisibles : '+e.message);}
+}
+function lock(){DB=null;DEK=null;ITEM={};LOC={};CH={};STOCK={};GROUPS=[];HAY=new Map();Modal.close();$('print').innerHTML='';$('toast').style.display='none';S.q='';S.lk='unlock';render();}
+
+/* =================== RENDU GÉNÉRAL =================== */
+let LASTSIG='';
+const NAV=[['stock','Stock','search'],['in','Entrée','in'],['out','Sortie','out'],['ch','Chantiers','site'],['plus','Plus','menu']];
+function render(){
+  const lk=!DB||!!S.lk;if(!DB&&!S.lk)S.lk=readEnv()?'unlock':'welcome';
+  document.body.classList.toggle('locked',lk);$('nav').style.display=lk?'none':'';
+  const app=$('app');
+  app.innerHTML=lk?lockHTML():({stock:homeHTML,in:inHTML,out:outHTML,ch:chHTML,plus:plusHTML}[S.tab]||homeHTML)();
+  if(!lk)renderNav();
+  const sig=[lk?S.lk:'',S.tab,S.view,S.chId,S.cat,S.icat].join('|');
+  if(sig!==LASTSIG){app.classList.remove('fade');void app.offsetWidth;app.classList.add('fade');LASTSIG=sig;}
+  if(lk&&S.lk==='unlock'&&matchMedia('(pointer:fine)').matches)setTimeout(()=>$('pin')&&$('pin').focus(),30);
+}
+function renderNav(){
+  const dot=alertItems().length>0||needBk();const co=DB.cfg.company;
+  $('nav').innerHTML=`<div class="brand" style="display:none">Stock Chantier<span>${esc(co||'Gestion de stock')}</span></div>`+
+    NAV.map(([id,n,ic])=>`<button class="${S.tab===id?'on':''}" onclick="go('${id}')">${IC[ic]}<span>${n}</span>${id==='plus'&&dot?'<i class="dot"></i>':''}</button>`).join('');
+}
+function go(tab){
+  if(S.tab===tab){if(tab==='plus')S.view=null;if(tab==='ch')S.chId=null;if(tab==='stock'){S.cat=null;S.sub=null;}}
+  S.tab=tab;render();scrollTo(0,0);
+  if(tab==='stock'&&matchMedia('(pointer:fine)').matches)setTimeout(()=>$('q')&&$('q').focus(),20);
+}
+
+/* =================== STOCK / RECHERCHE =================== */
+function needBk(){if(!DB||!DB.moves.length)return false;
+  if(!CFG.lastBk)return DB.moves.length>=5||Date.now()-(DB.created||Date.now())>2*864e5;
+  const since=DB.moves.filter(m=>m.ts>CFG.lastBk).length;
+  return (DB.mod||0)>(CFG.bkMod||0)&&(Date.now()-CFG.lastBk>7*864e5||since>=50);}
+function bkBanner(){if(!needBk())return '';
+  return `<div class="banner warn" style="cursor:pointer;margin-top:12px" onclick="S.tab='plus';S.view='backup';render()">💾<div class="grow">${CFG.lastBk?'Dernière sauvegarde '+ago(CFG.lastBk):"Vous n'avez encore jamais sauvegardé"}. <b>Sauvegarder maintenant ›</b></div></div>`;}
+function homeHTML(){
+  const co=DB.cfg.company,locs=activeLocs();
+  const chips=(locs.length>1?[['all','Tous les lieux'],...locs.map(l=>[l.id,LT[l.ty]?.[1]+' '+l.n])].map(([id,n])=>`<button class="chip ${S.loc===id?'on':''}" onclick="S.loc='${id}';S.lim=60;render()">${esc(n)}</button>`).join(''):'')+
+    `<button class="chip ${S.only?'on':''}" onclick="S.only=!S.only;S.lim=60;render()">✓ En stock seulement</button>`;
+  return `<div class="row" style="justify-content:space-between"><div><h1>Stock</h1><div class="sub">${co?esc(co)+' · ':''}${nInStock()} article(s) en stock</div></div>
+    <button class="btn sec sm" onclick="lock()" aria-label="Verrouiller" title="Verrouiller">${IC.lock}</button></div>
+  ${bkBanner()}
+  <div class="search"><span class="ic">${IC.search}</span><input id="q" type="text" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Ciment, romane, sable 0/4…" value="${esc(S.q)}" oninput="onQ(this.value)" onkeydown="if(event.key==='Escape'){onQ('');this.value='';}if(event.key==='Enter')this.blur()">
+  <button class="clr" id="clr" style="${S.q?'':'display:none'}" onclick="onQ('');$('q').value='';$('q').focus()" aria-label="Effacer">✕</button></div>
+  <div class="chips">${chips}</div>
+  <div id="results">${resultsHTML()}</div>`;
+}
+function onQ(v){S.q=v;S.lim=60;$('results').innerHTML=resultsHTML();const c=$('clr');if(c)c.style.display=v?'':'none';}
+function itemRow(it,q){
+  const per=STOCK[it.id]?Object.entries(STOCK[it.id]).filter(([l])=>S.loc==='all'||l===S.loc):[];
+  const qs=qShown(it.id),st=stat(it);
+  return `<div class="item${qs<=0?' zero':''}" onclick="openItem('${it.id}')"><div class="grow"><div class="nm">${hl(it.n,q)}</div><div class="sub">${esc(CAT[it.c]?.n||'')} › ${esc(it.s)}</div>
+    ${per.length&&S.loc==='all'?`<div class="locs">${per.map(([l,v])=>`<span class="loc"${v<0?' style="color:var(--bad)"':''}>${esc(LOC[l]?.n||'?')} · ${fmtQ(v)}</span>`).join('')}</div>`:''}</div>
+    <div class="q"><b${qs<0?' style="color:var(--bad)"':''}>${fmtQ(qs)}</b><span class="sub">${uLab(it.u,qs)}</span><div style="margin-top:5px">${pill(st)}</div></div></div>`;
+}
+let CURSUBS=[];
+function setSub(i){S.sub=i<0?null:CURSUBS[i];S.lim=60;render();}
+function openCat(id){S.cat=id;S.sub=null;S.lim=60;S.q='';render();scrollTo(0,0);}
+function resultsHTML(){
+  const q=S.q.trim();
+  if(!q&&!S.cat&&!S.only)return dashHTML();
+  let pool=DB.items.filter(it=>!it.del&&(!it.hid||qTot(it.id)!==0));
+  if(S.cat)pool=pool.filter(it=>it.c===S.cat);
+  if(S.cat&&S.sub)pool=pool.filter(it=>it.s===S.sub);
+  if(S.only)pool=pool.filter(it=>qShown(it.id)>0);
+  let head='';
+  if(S.cat){const c=CAT[S.cat];CURSUBS=subsOf(S.cat);
+    head=`<button class="back" onclick="S.cat=null;S.sub=null;render()">← Toutes les catégories</button><h2 style="margin-top:0">${c.e} ${esc(c.n)}</h2>
+    <div class="chips"><button class="chip ${!S.sub?'on':''}" onclick="setSub(-1)">Tout</button>${CURSUBS.map((s,i)=>`<button class="chip ${S.sub===s?'on':''}" onclick="setSub(${i})">${esc(s)}</button>`).join('')}</div>`;}
+  if(!q&&(S.only||(S.cat&&!S.sub))){
+    // liste groupée
+    const groups=[];
+    if(S.cat){CURSUBS.forEach(s=>{const its=pool.filter(it=>it.s===s);if(its.length)groups.push([s,its]);});}
+    else CATS.forEach(c=>{const its=pool.filter(it=>it.c===c.id);if(its.length)groups.push([c.e+' '+c.n,its]);});
+    if(!groups.length)return head+`<div class="empty"><div class="e">📭</div>Rien en stock ${S.loc!=='all'?'à cet endroit':''} pour l'instant.</div>`;
+    return head+groups.map(([n,its])=>`<div class="grp"><span>${esc(n)}</span><span>${its.filter(i=>qShown(i.id)>0).length} en stock</span></div>${its.map(it=>itemRow(it,'')).join('')}`).join('');
+  }
+  const res=q?search(q,pool):pool;
+  if(!res.length)return head+`<div class="empty"><div class="e">🔍</div>Aucun article trouvé pour « ${esc(q)} ».<br><button class="btn" style="max-width:320px;margin:14px auto 0" onclick="editItem(null,{n:S.q.trim(),c:S.cat||'divers'})">＋ Créer l'article « ${esc(q)} »</button></div>`;
+  const inS=res.filter(it=>qShown(it.id)>0).length;
+  return head+`<div class="sub" style="margin:4px 2px 8px">${res.length} résultat(s) · <b>${inS} en stock</b>${S.loc!=='all'?' à '+esc(LOC[S.loc]?.n||''):''}</div>`+
+    res.slice(0,S.lim).map(it=>itemRow(it,q)).join('')+
+    (res.length>S.lim?`<button class="btn sec" onclick="S.lim+=60;$('results').innerHTML=resultsHTML()">Afficher plus (${res.length-S.lim})</button>`:'');
+}
+function dashHTML(){
+  const A=alertItems(),run=chList(false).length,inS=nInStock();
+  const catCount=c=>DB.items.filter(it=>it.c===c&&!it.del&&qTot(it.id)>0).length;
+  return `<div class="tiles">
+    <div class="tile" onclick="S.only=true;render()"><b>${inS}</b><span>Articles en stock</span></div>
+    <div class="tile" onclick="S.tab='plus';S.view='alerts';render()"${A.length?' style="border-color:var(--warn)"':''}><b${A.length?' style="color:var(--warn)"':''}>${A.length}</b><span>Alertes stock bas</span></div>
+    <div class="tile" onclick="go('ch')"><b>${run}</b><span>Chantiers en cours</span></div></div>
+  ${A.length?`<div class="card" style="padding:4px 14px"><div class="grp" style="margin:10px 0 2px"><span>⚠️ À recommander</span><a href="#" onclick="event.preventDefault();S.tab='plus';S.view='alerts';render()" style="color:var(--acc);text-transform:none;letter-spacing:0">Tout voir</a></div>
+    ${A.slice(0,4).map(it=>`<div class="kv" style="cursor:pointer" onclick="openItem('${it.id}')"><span>${esc(it.n)}</span><b style="color:var(--${qTot(it.id)<=0?'bad':'warn'});white-space:nowrap">${fmtQU(qTot(it.id),it.u)}</b></div>`).join('')}</div>`:''}
+  <h2>Catégories</h2>
+  <div class="cats">${CATS.map(c=>{const n=catCount(c.id);return `<div class="cat" onclick="openCat('${c.id}')"><span class="e">${c.e}</span><div><b>${esc(c.n)}</b><div class="sub">${n?n+' en stock':'—'}</div></div></div>`;}).join('')}</div>
+  ${GROUPS.length?`<h2>Derniers mouvements</h2>${GROUPS.slice(0,4).map(G=>groupHTML(G,false)).join('')}<button class="btn sec" onclick="S.tab='plus';S.view='hist';render();scrollTo(0,0)">Tout l'historique</button>`:
+    `<div class="card" style="margin-top:18px"><h3>Pour commencer</h3><ol class="steps"><li>Allez dans <b>Entrée</b> et saisissez ce que vous avez déjà au dépôt et dans le camion (ou faites un <b>Inventaire</b> dans Plus).</li><li>À chaque achat : <b>Entrée</b>. À chaque fois que vous prenez du matériel : <b>Sortie</b>.</li><li>Cherchez ici n'importe quel article pour savoir s'il en reste et où.</li></ol></div>`}`;
+}
+
+/* ---------- mouvements (affichage) ---------- */
+const sign=(t,q)=>t==='adj'?(q>=0?'+':'−'):(t==='in'||t==='ret'||t==='dir')?'+':(t==='tr'?'':'−');
+function whereTxt(o){const L=id=>esc(LOC[id]?.n||'—'),C=id=>esc(CH[id]?.n||'chantier supprimé');
+  switch(o.t){case 'in':return L(o.to)+(o.sup?' · '+esc(o.sup):'');case 'dir':return 'Livré sur '+C(o.ch)+(o.sup?' · '+esc(o.sup):'');
+  case 'ret':return C(o.ch)+' → '+L(o.to);case 'out':return L(o.fr)+' → '+C(o.ch);case 'tr':return L(o.fr)+' → '+L(o.to);
+  case 'loss':return L(o.fr)+(o.no?' · '+esc(o.no):'');case 'adj':return 'Inventaire · '+L(o.to);}return '';}
+function groupHTML(G,full){
+  const [lab,cls]=MT[G.t]||['?','neu'];const L=full?G.lines:G.lines.slice(0,3);
+  return `<div class="card flat" style="padding:12px 14px;${G.del?'opacity:.55':''}"><div class="row" style="justify-content:space-between;align-items:flex-start"><div class="grow">
+    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="pill ${cls}">${lab}</span>${G.del?'<span class="pill bad">Annulé</span>':''}<span class="sub">${fmtDate(G.d)}</span></div>
+    <div style="font-weight:700;font-size:.9rem;margin-top:6px">${whereTxt(G)}</div></div>
+    ${full&&!G.del?`<button class="btn ghost sm" onclick="undoAsk('${G.g}')">Annuler</button>`:''}</div>
+    <div style="margin-top:6px">${L.map(m=>`<div class="row small" style="justify-content:space-between;padding:3px 0;${G.del?'text-decoration:line-through':''}"><span class="grow" style="color:var(--dim)">${esc(ITEM[m.i]?.n||'Article supprimé')}</span><b style="white-space:nowrap">${sign(G.t,m.q)}${fmtQU(Math.abs(m.q),ITEM[m.i]?.u)}</b></div>`).join('')}
+    ${!full&&G.lines.length>3?`<div class="sub">+ ${G.lines.length-3} autre(s)</div>`:''}</div>
+    ${G.ref?`<div class="sub" style="margin-top:4px">Bon n° ${esc(G.ref)}</div>`:''}${G.no&&G.t!=='loss'?`<div class="sub" style="margin-top:2px">📝 ${esc(G.no)}</div>`:''}</div>`;
+}
+function undoGroup(g){const now=Date.now();DB.moves.forEach(m=>{if(m.g===g&&!m.del){m.del=true;m.up=now;}});commit();render();toast('Mouvement annulé — les quantités sont rétablies');}
+function undoAsk(g){ask('Annuler ce mouvement ?','Les quantités reviendront comme avant. Le mouvement reste visible dans l\'historique, marqué « Annulé ».','Annuler le mouvement',()=>undoGroup(g),true);}
+
+/* ---------- fiche article ---------- */
+function openItem(id){
+  const it=ITEM[id];if(!it)return;const tot=qTot(id),per=STOCK[id]||{};
+  const mv=DB.moves.filter(m=>m.i===id&&!m.del).sort((a,b)=>(b.d||'').localeCompare(a.d||'')||b.ts-a.ts).slice(0,8);
+  Modal.open(`<div class="row" style="justify-content:space-between;align-items:flex-start"><div class="grow"><div class="sub">${CAT[it.c]?.e||''} ${esc(CAT[it.c]?.n||'')} › ${esc(it.s)}</div><h2 style="margin:4px 0 0">${esc(it.n)}</h2></div><button class="x-close" onclick="Modal.close()" aria-label="Fermer">✕</button></div>
+  <div class="row" style="margin:14px 0 8px;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:2.1rem;font-weight:800;${tot<0?'color:var(--bad)':''}">${fmtQ(tot)}</span><span class="muted">${uLab(it.u,tot)} au total</span>${pill(stat(it))}</div>
+  ${Object.keys(per).length?`<div class="card flat" style="padding:2px 14px">${Object.entries(per).map(([l,q])=>`<div class="kv"><span>${LT[LOC[l]?.ty||'autre']?.[1]||''} ${esc(LOC[l]?.n||'?')}</span><b${q<0?' style="color:var(--bad)"':''}>${fmtQU(q,it.u)}</b></div>`).join('')}</div>`:'<p class="muted">Aucun stock enregistré pour cet article.</p>'}
+  <div class="sub" style="margin-top:6px">Seuil d'alerte : <b>${it.min?fmtQU(it.min,it.u):'non défini'}</b> · <a href="#" style="color:var(--acc)" onclick="event.preventDefault();editItem('${id}')">modifier</a>${it.note?`<br>📝 ${esc(it.note)}`:''}</div>
+  <div class="btns" style="margin-top:14px"><button class="btn" onclick="quick('in','${id}')">＋ Entrée</button><button class="btn" onclick="quick('out','${id}')">− Sortie</button>
+    <button class="btn sec" onclick="quick('tr','${id}')">⇄ Déplacer</button><button class="btn sec" onclick="countItem('${id}')">✎ Corriger</button></div>
+  ${mv.length?`<h3 style="margin:20px 0 4px">Derniers mouvements</h3>${mv.map(m=>`<div class="kv"><span><span class="pill ${MT[m.t][1]}">${MT[m.t][0]}</span> <span class="sub">${fmtDate(m.d)} · ${whereTxt(m)}</span></span><b style="white-space:nowrap">${sign(m.t,m.q)}${fmtQ(Math.abs(m.q))}</b></div>`).join('')}`:''}
+  <div class="btns" style="margin-top:16px"><button class="btn sec" onclick="editItem('${id}')">Modifier l'article</button><button class="btn sec" onclick="toggleHide('${id}');openItem('${id}')">${it.hid?'Ré-afficher':'Masquer du catalogue'}</button></div>`);
+}
+function quick(mode,id){
+  Modal.close();
+  if(mode==='in'){S.fin=S.fin||newFin();addItemLine('in',id,true);S.tab='in';}
+  else{S.fout=S.fout||newFout();S.fout.mode=mode==='tr'?'tr':'use';
+    if(!(qAt(id,S.fout.fr)>0)){const best=Object.entries(STOCK[id]||{}).filter(([l,q])=>q>0&&LOC[l]&&!LOC[l].arch).sort((a,b)=>b[1]-a[1])[0];if(best)S.fout.fr=best[0];}
+    if(S.fout.mode==='tr'&&S.fout.to===S.fout.fr)S.fout.to=(activeLocs().find(l=>l.id!==S.fout.fr)||{}).id||'';
+    addItemLine('out',id,true);S.tab='out';}
+  render();scrollTo(0,0);focusQty(mode==='in'?'in':'out');
+}
+function countItem(id){
+  const it=ITEM[id],locs=activeLocs();
+  Modal.open(`<h2 style="margin-top:0">Corriger le stock</h2><p class="muted">${esc(it.n)}<br>Saisissez la quantité <b>réellement présente</b> à chaque endroit. Laissez vide si vous n'avez pas compté.</p>
+  ${locs.map(l=>`<label>${LT[l.ty]?.[1]||''} ${esc(l.n)} <span style="font-weight:400">(actuel : ${fmtQU(qAt(id,l.id),it.u)})</span></label><input id="cnt-${l.id}" inputmode="decimal" placeholder="${fmtQ(qAt(id,l.id))}">`).join('')}
+  <div class="btns" style="margin-top:16px"><button class="btn sec" onclick="openItem('${id}')">Retour</button><button class="btn" onclick="saveCount('${id}')">Enregistrer</button></div>`);
+}
+function saveCount(id){
+  const g=uid(),ts=Date.now();let n=0;
+  for(const l of activeLocs()){const v=parseQ($('cnt-'+l.id).value);if(isNaN(v))continue;if(v<0)return toast('Quantité négative impossible');const diff=r3(v-qAt(id,l.id));
+    if(diff!==0){DB.moves.push({id:uid(),g,ts,d:today(),t:'adj',i:id,q:diff,to:l.id,no:'Correction',up:ts});n++;}}
+  if(!n){toast('Aucun écart : rien à corriger');return openItem(id);}
+  commit();render();openItem(id);toast('Stock corrigé ✓','Annuler',()=>{undoGroup(g);openItem(id);});
+}
+function toggleHide(id){const it=ITEM[id];it.hid=!it.hid;it.up=Date.now();commit();if(S.tab!=='plus')render();else render();toast(it.hid?'Article masqué de la recherche':'Article ré-affiché');}
+
+/* ---------- créer / modifier un article ---------- */
+let ITEM_CB=null;
+function editItem(id,preset,cb){
+  const it=id?ITEM[id]:Object.assign({n:'',c:'divers',s:'',u:'u',min:0,note:''},preset||{});
+  if(!id&&!it.s)it.s=(CAT[it.c]?.subs[0]?.n)||'Divers';
+  ITEM_CB=cb||null;
+  Modal.open(`<h2 style="margin-top:0">${id?"Modifier l'article":'Nouvel article'}</h2>
+  <label>Nom de l'article</label><input id="ei-n" value="${esc(it.n)}" placeholder="Ex. Tuile romane rouge vieillie">
+  <div class="grid2"><div><label>Catégorie</label><select id="ei-c" onchange="eiSubs()">${CATS.map(c=>`<option value="${c.id}" ${c.id===it.c?'selected':''}>${c.e} ${esc(c.n)}</option>`).join('')}</select></div>
+  <div><label>Sous-catégorie</label><input id="ei-s" list="ei-dl" value="${esc(it.s)}"><datalist id="ei-dl"></datalist></div></div>
+  <div class="grid2"><div><label>Unité de comptage</label><select id="ei-u">${Object.entries(UNITS).map(([k,v])=>`<option value="${k}" ${k===it.u?'selected':''}>${v[2]}</option>`).join('')}</select></div>
+  <div><label>Seuil d'alerte (option)</label><input id="ei-min" inputmode="decimal" value="${it.min?fmtQ(it.min):''}" placeholder="Ex. 10"></div></div>
+  <label>Note / référence (option)</label><input id="ei-note" value="${esc(it.note||'')}" placeholder="Fournisseur habituel, couleur, réf…">
+  ${id&&!DB.moves.some(m=>m.i===id)&&id[0]==='u'?`<button class="btn danger" onclick="delItem('${id}')">Supprimer cet article</button>`:''}
+  <div class="btns" style="margin-top:16px"><button class="btn sec" onclick="Modal.close()">Annuler</button><button class="btn" onclick="saveItem(${id?`'${id}'`:'null'})">Enregistrer</button></div>`);
+  eiSubs();if(!id)setTimeout(()=>{const e=$('ei-n');if(e&&!e.value)e.focus();},50);
+}
+function eiSubs(){const c=$('ei-c').value;$('ei-dl').innerHTML=subsOf(c).map(s=>`<option value="${esc(s)}">`).join('');}
+function saveItem(id){
+  const n=$('ei-n').value.trim();if(!n)return toast("Donnez un nom à l'article");
+  const c=$('ei-c').value,s=$('ei-s').value.trim()||'Divers',u=$('ei-u').value,min=parseQ($('ei-min').value),note=$('ei-note').value.trim();
+  if(DB.items.some(x=>!x.del&&x.id!==id&&norm(x.n)===norm(n)))return toast('Un article porte déjà ce nom');
+  let it;if(id){it=ITEM[id];}else{it={id:'u'+uid()};DB.items.push(it);}
+  Object.assign(it,{n,c,s,u,min:isNaN(min)||min<0?0:min,note,up:Date.now()});if(!note)delete it.note;
+  commit();Modal.close();const cb=ITEM_CB;ITEM_CB=null;
+  if(cb)cb(it.id);else{render();toast(id?'Article modifié ✓':'Article créé ✓');}
+}
+function delItem(id){ask('Supprimer cet article ?','Il disparaîtra du catalogue.','Supprimer',()=>{const it=ITEM[id];it.del=true;it.up=Date.now();commit();render();toast('Article supprimé');},true);}
+
+/* ---------- sélecteur d'article en fenêtre ---------- */
+let PICK_CB=null;
+function pickItem(cb,title){PICK_CB=cb;
+  Modal.open(`<h2 style="margin-top:0">${esc(title||'Choisir un article')}</h2><div class="search" style="margin:8px 0 10px"><span class="ic">${IC.search}</span><input id="pk-q" autocomplete="off" placeholder="Rechercher…" oninput="pkList(this.value)"></div><div id="pk-res"></div><button class="btn sec" onclick="Modal.close()">Fermer</button>`);
+  pkList('');setTimeout(()=>$('pk-q')&&$('pk-q').focus(),60);}
+function pkList(v){const pool=DB.items.filter(i=>!i.del);const res=(v.trim()?search(v,pool):pool.filter(i=>qTot(i.id)>0)).slice(0,30);
+  $('pk-res').innerHTML=res.map(it=>`<div class="item" onclick="const f=PICK_CB;Modal.close();f('${it.id}')"><div class="grow"><div class="nm">${hl(it.n,v)}</div><div class="sub">${esc(it.s)}</div></div><div class="q"><b>${fmtQ(qTot(it.id))}</b><span class="sub">${uLab(it.u,qTot(it.id))}</span></div></div>`).join('')||`<p class="muted" style="padding:10px 0">${v.trim()?'Aucun résultat.':'Tapez le nom d\'un article.'}</p>`;}
+
+/* =================== FORMULAIRES ENTRÉE / SORTIE =================== */
+function newFin(){return {mode:'buy',direct:false,d:today(),to:defLoc(),ch:'',sup:'',ref:'',note:'',lines:[{i:null,q:''}]};}
+function newFout(){const L=activeLocs();return {mode:'use',d:today(),fr:defLoc(),to:(L[1]||L[0]||{}).id||'',ch:'',note:'',motif:'Casse',lines:[{i:null,q:''}],force:false};}
+const FORM=k=>k==='in'?S.fin:S.fout;
+function locSelect(path,val,label,kind){const L=activeLocs();if(!L.some(l=>l.id===val)&&L[0])val=L[0].id;
+  return `<label>${label}</label><select onchange="${path}=this.value;${kind==='out'?'S.fout.force=false;':''}render()">${L.map(l=>`<option value="${l.id}" ${l.id===val?'selected':''}>${LT[l.ty]?.[1]||''} ${esc(l.n)}</option>`).join('')}</select>`;}
+function chSelect(kind,label,withDone){const f=FORM(kind);const L=chList(!!withDone);
+  return `<label>${label||'Chantier'}</label><select onchange="chSel('${kind}',this.value)"><option value="">— Choisir un chantier —</option>${L.map(c=>`<option value="${c.id}" ${c.id===f.ch?'selected':''}>${esc(c.n)}${c.cl?' — '+esc(c.cl):''}${c.st==='done'?' (terminé)':''}</option>`).join('')}<option value="__new">＋ Nouveau chantier…</option></select>`;}
+function chSel(kind,v){const f=FORM(kind);if(v==='__new'){editCh(null,id=>{f.ch=id;render();});render();return;}f.ch=v;if(kind==='out')f.force=false;}
+function freqItems(kind){const types=kind==='in'?['in','dir']:['out','loss','tr'];const cnt={};
+  for(let i=DB.moves.length-1,n=0;i>=0&&n<300;i--){const m=DB.moves[i];if(m.del||!types.includes(m.t))continue;n++;cnt[m.i]=(cnt[m.i]||0)+1;}
+  let ids=Object.keys(cnt).filter(id=>ITEM[id]&&!ITEM[id].del).sort((a,b)=>cnt[b]-cnt[a]);
+  if(kind==='out'){const f=S.fout;ids=ids.filter(id=>qAt(id,f.fr)>0);}
+  return ids.slice(0,10);}
+function freqChips(kind){const ids=freqItems(kind);if(!ids.length)return '';
+  return `<div class="sub" style="margin:0 2px 6px">Ajout rapide :</div><div class="chips">${ids.map(id=>`<button class="chip" onclick="addItemLine('${kind}','${id}');render();focusQty('${kind}')">${esc(ITEM[id].n.split(' — ')[0])}</button>`).join('')}</div>`;}
+function addItemLine(kind,id,noRender){const f=FORM(kind);const empty=f.lines.findIndex(l=>!l.i);if(empty>=0)f.lines[empty]={i:id,q:''};else f.lines.push({i:id,q:''});if(kind==='out')f.force=false;f._focus=f.lines.findIndex(l=>l.i===id&&!l.q);}
+function focusQty(kind){const f=FORM(kind);const k=f._focus;const e=$('lq-'+(k>=0?k:f.lines.length-1));if(e){e.focus({preventScroll:true});e.scrollIntoView({block:'center',behavior:'smooth'});}}
+function lineInfo(f,kind,it){
+  if(kind==='out'){const a=qAt(it.id,f.fr),q=parseQ(f.lines.find(l=>l.i===it.id)?.q);const over=!isNaN(q)&&q>a;
+    return `<span style="${over||a<=0?'color:var(--bad)':''}">Dispo ${esc(LOC[f.fr]?.n||'')} : ${fmtQU(a,it.u)}</span>`;}
+  return 'En stock : '+fmtQU(qTot(it.id),it.u);}
+function linesHTML(f,kind){
+  return f.lines.map((l,k)=>{const it=l.i&&ITEM[l.i];
+    return `<div class="line">${it?`<button class="pick" onclick="lineClear('${kind}',${k})" title="Changer d'article"><span class="nm">${esc(it.n)}</span><span class="sub">${lineInfo(f,kind,it)}</span></button>`
+      :`<div class="picker"><input id="ls-${k}" placeholder="Rechercher un article…" autocomplete="off" autocorrect="off" spellcheck="false" oninput="lineSearch('${kind}',${k},this.value)" onfocus="lineSearch('${kind}',${k},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();linePickFirst('${kind}',${k})}"><div class="sugg" id="sg-${k}" style="display:none"></div></div>`}
+      <div><input id="lq-${k}" inputmode="decimal" placeholder="Qté" value="${esc(l.q)}" oninput="lineQty('${kind}',${k},this.value)"><div class="sub" id="lu-${k}" style="text-align:center;margin-top:2px">${it?uLab(it.u,parseQ(l.q)||0):''}</div></div>
+      <button class="x" onclick="lineDel('${kind}',${k})" aria-label="Retirer la ligne">✕</button></div>`;}).join('');
+}
+let LSUG={};
+function lineSearch(kind,k,v){
+  const f=FORM(kind),box=$('sg-'+k);if(!box)return;const pool=DB.items.filter(i=>!i.del);let res;
+  if(!v.trim())res=kind==='out'?pool.filter(it=>qAt(it.id,f.fr)>0).sort((a,b)=>a.n.localeCompare(b.n,'fr')):freqItems('in').map(id=>ITEM[id]);
+  else{res=search(v,pool.filter(i=>!i.hid||qTot(i.id)!==0));if(kind==='out')res.sort((a,b)=>(qAt(b.id,f.fr)>0)-(qAt(a.id,f.fr)>0));}
+  res=res.slice(0,8);LSUG[k]=res.map(it=>it.id);
+  box.innerHTML=res.map(it=>`<div onmousedown="event.preventDefault()" onclick="linePick('${kind}',${k},'${it.id}')"><b>${hl(it.n,v)}</b><div class="sub">${esc(it.s)} · ${kind==='out'?'dispo '+fmtQU(qAt(it.id,f.fr),it.u):'en stock '+fmtQU(qTot(it.id),it.u)}</div></div>`).join('')+
+    (v.trim()?`<div onmousedown="event.preventDefault()" onclick="newItemFromLine('${kind}',${k})" style="color:var(--acc);font-weight:700">＋ Créer l'article « ${esc(v.trim())} »</div>`:'');
+  box.style.display=box.innerHTML?'block':'none';
+}
+function linePickFirst(kind,k){const id=(LSUG[k]||[])[0];if(id)linePick(kind,k,id);}
+function linePick(kind,k,id){const f=FORM(kind);f.lines[k].i=id;if(kind==='out')f.force=false;render();const e=$('lq-'+k);if(e)e.focus();}
+function newItemFromLine(kind,k){const v=($('ls-'+k)||{}).value||'';editItem(null,{n:v.trim()},id=>{linePick(kind,k,id);toast('Article créé ✓');});}
+function lineClear(kind,k){FORM(kind).lines[k].i=null;render();const e=$('ls-'+k);if(e)e.focus();}
+function lineDel(kind,k){const f=FORM(kind);if(f.lines.length<=1)f.lines=[{i:null,q:''}];else f.lines.splice(k,1);if(kind==='out')f.force=false;render();}
+function lineQty(kind,k,v){const f=FORM(kind);f.lines[k].q=v;const it=ITEM[f.lines[k].i];const u=$('lu-'+k);if(u&&it)u.textContent=uLab(it.u,parseQ(v)||0);
+  if(kind==='out'&&f.force){f.force=false;const w=$('warn-out');if(w)w.remove();}const b=$('sub-'+kind);if(b)b.textContent=submitLabel(kind);}
+function addLine(kind){const f=FORM(kind);f.lines.push({i:null,q:''});render();const e=$('ls-'+(f.lines.length-1));if(e)e.focus();}
+function submitLabel(kind){const f=FORM(kind);const n=f.lines.filter(l=>l.i).length;const s=n>1?` (${n} articles)`:'';
+  if(kind==='in')return (f.mode==='ret'?'Valider le retour':f.direct?'Valider la livraison':"Valider l'entrée")+s;
+  if(f.force)return 'Valider quand même';return (f.mode==='tr'?'Valider le transfert':f.mode==='loss'?'Valider la perte':'Valider la sortie')+s;}
+function checkLines(f){const L=f.lines.filter(l=>l.i);if(!L.length){toast('Ajoutez au moins un article');return null;}
+  for(let k=0;k<f.lines.length;k++){const l=f.lines[k];if(!l.i)continue;const q=parseQ(l.q);if(!(q>0)){toast(`Quantité manquante pour « ${ITEM[l.i].n} »`);const e=$('lq-'+k);if(e)e.focus();return null;}}
+  return L;}
+
+function inHTML(){
+  const f=S.fin||(S.fin=newFin());
+  return `<h1>Entrée de stock</h1><div class="sub">Achat, livraison ou retour de matériel</div>
+  <div class="seg" style="margin-top:14px"><button class="${f.mode==='buy'?'on':''}" onclick="S.fin.mode='buy';render()">Achat / livraison</button><button class="${f.mode==='ret'?'on':''}" onclick="S.fin.mode='ret';render()">Retour de chantier</button></div>
+  <div class="card">
+  ${f.mode==='buy'?`<label style="margin-top:0">Livré où ?</label>
+    <div class="seg" style="margin-bottom:0"><button class="${!f.direct?'on':''}" onclick="S.fin.direct=false;render()">Dans mon stock</button><button class="${f.direct?'on':''}" onclick="S.fin.direct=true;render()">Direct sur chantier</button></div>
+    ${f.direct?chSelect('in')+'<div class="sub" style="margin-top:6px">Le matériel est compté comme utilisé sur ce chantier, sans passer par votre stock.</div>':locSelect('S.fin.to',f.to,'Emplacement')}
+    <div class="grid2"><div><label>Fournisseur</label><input list="dl-sup" value="${esc(f.sup)}" oninput="S.fin.sup=this.value" placeholder="Négoce, carrière…"><datalist id="dl-sup">${DB.sups.map(s=>`<option value="${esc(s)}">`).join('')}</datalist></div>
+    <div><label>N° de bon (option)</label><input value="${esc(f.ref)}" oninput="S.fin.ref=this.value" placeholder="BL…"></div></div>`
+  :`<div style="margin-top:-12px">${chSelect('in',"Chantier d'où revient le matériel",true)}</div>${locSelect('S.fin.to',f.to,'Remis dans')}`}
+  <label>Date</label><input type="date" value="${f.d}" max="${today()}" onchange="S.fin.d=this.value||today()">
+  </div>
+  <h2>Articles</h2>${freqChips('in')}
+  <div class="card" style="padding:4px 14px 10px">${linesHTML(f,'in')}<button class="btn ghost" style="margin-top:4px" onclick="addLine('in')">＋ Ajouter un article</button></div>
+  <label>Note (facultatif)</label><textarea oninput="S.fin.note=this.value" placeholder="Ex. palette consignée, livraison incomplète…">${esc(f.note)}</textarea>
+  <button class="btn" id="sub-in" onclick="submitIn()">${submitLabel('in')}</button>
+  <button class="btn ghost" onclick="S.fin=newFin();render()">Vider le formulaire</button>`;
+}
+function submitIn(){
+  const f=S.fin;const L=checkLines(f);if(!L)return;
+  const t=f.mode==='ret'?'ret':(f.direct?'dir':'in');
+  if((t==='ret'||t==='dir')&&!f.ch)return toast(t==='ret'?"Choisissez le chantier d'où revient le matériel":'Choisissez le chantier');
+  if(t!=='dir'&&!LOC[f.to])return toast('Choisissez un emplacement');
+  const g=uid(),ts=Date.now(),sup=t==='ret'?'':f.sup.trim();
+  L.forEach(l=>DB.moves.push(clean({id:uid(),g,ts,d:f.d||today(),t,i:l.i,q:r3(parseQ(l.q)),to:t==='dir'?null:f.to,ch:t==='in'?null:f.ch,sup,ref:f.ref.trim(),no:f.note.trim(),up:ts})));
+  if(sup&&!DB.sups.includes(sup))DB.sups.push(sup);
+  commit();S.fin=Object.assign(newFin(),{mode:f.mode,direct:f.direct,to:f.to,ch:f.ch,d:f.d});render();scrollTo(0,0);
+  toast(`✓ Enregistré · ${L.length} article${L.length>1?'s':''}`,'Annuler',()=>undoGroup(g));
+}
+
+function outHTML(){
+  const f=S.fout||(S.fout=newFout());
+  const short=f.force?f.lines.filter(l=>l.i&&parseQ(l.q)>qAt(l.i,f.fr)):[];
+  return `<h1>Sortie de stock</h1><div class="sub">Matériel utilisé, déplacé ou perdu</div>
+  <div class="seg" style="margin-top:14px">${[['use','Pour un chantier'],['tr','Transfert'],['loss','Perte / casse']].map(([m,n])=>`<button class="${f.mode===m?'on':''}" onclick="S.fout.mode='${m}';S.fout.force=false;render()">${n}</button>`).join('')}</div>
+  <div class="card">
+  ${f.mode==='use'?`<div style="margin-top:-12px">${chSelect('out')}</div>${locSelect('S.fout.fr',f.fr,'Pris depuis','out')}`:''}
+  ${f.mode==='tr'?`<div class="grid2"><div style="margin-top:-12px">${locSelect('S.fout.fr',f.fr,'De','out')}</div><div style="margin-top:-12px">${locSelect('S.fout.to',f.to,'Vers','out')}</div></div>${f.fr===f.to?'<div class="sub" style="color:var(--bad);margin-top:6px">Choisissez deux emplacements différents.</div>':''}`:''}
+  ${f.mode==='loss'?`<div class="grid2"><div style="margin-top:-12px">${locSelect('S.fout.fr',f.fr,'Depuis','out')}</div><div style="margin-top:-12px"><label>Motif</label><select onchange="S.fout.motif=this.value">${['Casse','Perte','Vol','Abîmé / périmé','Autre'].map(m=>`<option ${f.motif===m?'selected':''}>${m}</option>`).join('')}</select></div></div>`:''}
+  <label>Date</label><input type="date" value="${f.d}" max="${today()}" onchange="S.fout.d=this.value||today()">
+  </div>
+  <h2>Articles</h2>${freqChips('out')}
+  <div class="card" style="padding:4px 14px 10px">${linesHTML(f,'out')}<button class="btn ghost" style="margin-top:4px" onclick="addLine('out')">＋ Ajouter un article</button></div>
+  <label>Note (facultatif)</label><textarea oninput="S.fout.note=this.value" placeholder="${f.mode==='use'?'Ex. pour la dalle du garage':''}">${esc(f.note)}</textarea>
+  ${short.length?`<div class="banner warn" id="warn-out" style="margin-top:12px">⚠️<div>Stock insuffisant à <b>${esc(LOC[f.fr]?.n||'')}</b> pour : ${short.map(l=>`${esc(ITEM[l.i].n)} (dispo ${fmtQU(qAt(l.i,f.fr),ITEM[l.i].u)})`).join(', ')}.<br>Le stock deviendra négatif : pensez à faire un inventaire. Appuyez à nouveau pour valider quand même.</div></div>`:''}
+  <button class="btn" id="sub-out" onclick="submitOut()">${submitLabel('out')}</button>
+  <button class="btn ghost" onclick="S.fout=newFout();render()">Vider le formulaire</button>`;
+}
+function submitOut(){
+  const f=S.fout;const L=checkLines(f);if(!L)return;
+  if(f.mode==='use'&&!f.ch)return toast('Choisissez le chantier');
+  if(!LOC[f.fr])return toast("Choisissez l'emplacement de départ");
+  if(f.mode==='tr'&&(!LOC[f.to]||f.to===f.fr))return toast('Choisissez deux emplacements différents');
+  const short=L.filter(l=>parseQ(l.q)>qAt(l.i,f.fr)+1e-9);
+  if(short.length&&!f.force){f.force=true;render();const w=$('warn-out');if(w)w.scrollIntoView({block:'center',behavior:'smooth'});return;}
+  const t={use:'out',tr:'tr',loss:'loss'}[f.mode];const g=uid(),ts=Date.now();
+  const no=t==='loss'?f.motif+(f.note.trim()?' — '+f.note.trim():''):f.note.trim();
+  L.forEach(l=>DB.moves.push(clean({id:uid(),g,ts,d:f.d||today(),t,i:l.i,q:r3(parseQ(l.q)),fr:f.fr,to:t==='tr'?f.to:null,ch:t==='out'?f.ch:null,no,up:ts})));
+  commit();S.fout=Object.assign(newFout(),{mode:f.mode,fr:f.fr,to:f.to,ch:f.ch,d:f.d,motif:f.motif});render();scrollTo(0,0);
+  const al=L.filter(l=>{const it=ITEM[l.i];return it.min&&qTot(it.id)<=it.min;});
+  toast(`✓ Enregistré · ${L.length} article${L.length>1?'s':''}${al.length?' · ⚠️ '+al.length+' sous le seuil':''}`,'Annuler',()=>undoGroup(g));
+}
+
+/* =================== CHANTIERS =================== */
+function chUse(cid){const u={};for(const m of DB.moves){if(m.del||m.ch!==cid)continue;const s=m.t==='ret'?-1:(m.t==='out'||m.t==='dir')?1:0;if(s)u[m.i]=r3((u[m.i]||0)+s*m.q);}return u;}
+function chLast(cid){let t=0;for(const m of DB.moves)if(m.ch===cid&&!m.del&&m.ts>t)t=m.ts;return t;}
+function chHTML(){
+  if(S.chId&&CH[S.chId]&&!CH[S.chId].del)return chDetailHTML(CH[S.chId]);S.chId=null;
+  const all=DB.ch.filter(c=>!c.del),tab=S.chTab;const run=all.filter(c=>c.st!=='done'),done=all.filter(c=>c.st==='done');
+  const list=(tab==='run'?run:done).sort((a,b)=>Math.max(chLast(b.id),b.up||0)-Math.max(chLast(a.id),a.up||0));
+  return `<div class="row" style="justify-content:space-between"><div><h1>Chantiers</h1><div class="sub">Suivi du matériel utilisé par chantier</div></div><button class="btn sm" onclick="editCh(null)">＋ Nouveau</button></div>
+  <div class="seg" style="margin-top:14px"><button class="${tab==='run'?'on':''}" onclick="S.chTab='run';render()">En cours (${run.length})</button><button class="${tab==='done'?'on':''}" onclick="S.chTab='done';render()">Terminés (${done.length})</button></div>
+  ${list.length?list.map(c=>{const u=chUse(c.id);const nArt=Object.values(u).filter(v=>v>0).length;const nb=new Set(DB.moves.filter(m=>m.ch===c.id&&!m.del).map(m=>m.g)).size;const last=chLast(c.id);
+    return `<div class="item" onclick="S.chId='${c.id}';render();scrollTo(0,0)"><div class="grow"><div class="nm">${esc(c.n)}</div><div class="sub">${[c.cl,c.ad].filter(Boolean).map(esc).join(' · ')||'—'}</div>
+      <div class="sub" style="margin-top:4px">${nb} mouvement(s) · ${nArt} article(s)${last?' · dernier '+fmtDate(new Date(last).toISOString().slice(0,10)):''}</div></div>
+      <div class="q">${c.st==='done'?'<span class="pill neu">Terminé</span>':'<span class="pill acc">En cours</span>'}</div></div>`;}).join('')
+  :`<div class="empty"><div class="e">🏗️</div>${tab==='run'?'Aucun chantier en cours.<br><button class="btn" style="max-width:300px;margin:14px auto 0" onclick="editCh(null)">＋ Créer un chantier</button>':'Aucun chantier terminé.'}</div>`}`;
+}
+function chDetailHTML(c){
+  const u=chUse(c.id);const ids=Object.keys(u).filter(id=>u[id]!==0&&ITEM[id]);
+  const G=GROUPS.filter(g=>g.ch===c.id);
+  const byCat={};ids.forEach(id=>{const k=ITEM[id].c;(byCat[k]=byCat[k]||[]).push(id);});
+  return `<button class="back" onclick="S.chId=null;render()">← Chantiers</button>
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><div class="grow"><h1>${esc(c.n)}</h1>
+   <div class="sub" style="margin-top:4px">${[c.cl&&'👤 '+esc(c.cl),c.ad&&'📍 '+esc(c.ad)].filter(Boolean).join('<br>')||''}</div>
+   ${c.d0?`<div class="sub">Début : ${fmtDateLong(c.d0)}</div>`:''}</div>${c.st==='done'?'<span class="pill neu">Terminé</span>':'<span class="pill acc">En cours</span>'}</div>
+  ${c.ad?`<a class="btn sec sm" style="margin-top:10px" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.ad)}" target="_blank" rel="noopener noreferrer">🧭 Itinéraire</a>`:''}
+  ${c.no?`<div class="card flat" style="margin-top:12px">📝 ${esc(c.no)}</div>`:''}
+  <div class="btns" style="margin-top:12px"><button class="btn" onclick="chGo('out','${c.id}')">− Sortie de matériel</button><button class="btn sec" onclick="chGo('ret','${c.id}')">↩ Retour au stock</button>
+   <button class="btn sec" onclick="chGo('dir','${c.id}')">🚚 Livraison directe</button><button class="btn sec" onclick="printCh('${c.id}')">🖨️ Récapitulatif</button></div>
+  <h2>Matériel utilisé</h2>
+  ${ids.length?`<div class="card" style="padding:2px 14px">${CATS.filter(k=>byCat[k.id]).map(k=>`<div class="grp" style="margin:12px 0 2px"><span>${k.e} ${esc(k.n)}</span></div>${byCat[k.id].map(id=>`<div class="kv"><span>${esc(ITEM[id].n)}</span><b style="white-space:nowrap">${fmtQU(u[id],ITEM[id].u)}</b></div>`).join('')}`).join('')}</div>
+   <div class="sub">Quantités nettes : sorties + livraisons directes − retours.</div>`:'<p class="muted">Aucun matériel enregistré pour ce chantier.</p>'}
+  ${G.length?`<h2>Mouvements (${G.length})</h2>${G.slice(0,30).map(g=>groupHTML(g,true)).join('')}`:''}
+  <div class="btns" style="margin-top:16px"><button class="btn sec" onclick="editCh('${c.id}')">Modifier</button><button class="btn sec" onclick="toggleChDone('${c.id}')">${c.st==='done'?'Rouvrir le chantier':'Marquer terminé'}</button></div>`;
+}
+function chGo(kind,id){
+  if(kind==='out'){S.fout=S.fout||newFout();S.fout.mode='use';S.fout.ch=id;S.fout.force=false;S.tab='out';}
+  else{S.fin=S.fin||newFin();S.fin.ch=id;if(kind==='ret'){S.fin.mode='ret';}else{S.fin.mode='buy';S.fin.direct=true;}S.tab='in';}
+  render();scrollTo(0,0);
+}
+function toggleChDone(id){const c=CH[id];c.st=c.st==='done'?'run':'done';if(c.st==='done')c.d1=today();c.up=Date.now();commit();render();toast(c.st==='done'?'Chantier terminé ✓':'Chantier rouvert');}
+let CH_CB=null;
+function editCh(id,cb){
+  const c=id?CH[id]:{n:'',cl:'',ad:'',d0:today(),no:''};CH_CB=cb||null;const used=id&&DB.moves.some(m=>m.ch===id);
+  Modal.open(`<h2 style="margin-top:0">${id?'Modifier le chantier':'Nouveau chantier'}</h2>
+  <label>Nom du chantier</label><input id="ec-n" value="${esc(c.n)}" placeholder="Ex. Extension Dupont">
+  <label>Client</label><input id="ec-cl" value="${esc(c.cl||'')}" placeholder="Nom du client">
+  <label>Adresse</label><input id="ec-ad" value="${esc(c.ad||'')}" placeholder="Rue, ville">
+  <label>Date de début</label><input id="ec-d0" type="date" value="${c.d0||''}">
+  <label>Notes</label><textarea id="ec-no" placeholder="Accès, contact, particularités…">${esc(c.no||'')}</textarea>
+  ${id&&!used?`<button class="btn danger" onclick="delCh('${id}')">Supprimer ce chantier</button>`:''}
+  <div class="btns" style="margin-top:16px"><button class="btn sec" onclick="Modal.close()">Annuler</button><button class="btn" onclick="saveCh(${id?`'${id}'`:'null'})">Enregistrer</button></div>`);
+  if(!id)setTimeout(()=>$('ec-n')&&$('ec-n').focus(),60);
+}
+function saveCh(id){
+  const n=$('ec-n').value.trim();if(!n)return toast('Donnez un nom au chantier');
+  let c;if(id)c=CH[id];else{c={id:uid(),st:'run'};DB.ch.push(c);}
+  Object.assign(c,clean({n,cl:$('ec-cl').value.trim(),ad:$('ec-ad').value.trim(),d0:$('ec-d0').value,no:$('ec-no').value.trim()}),{up:Date.now()});
+  ['cl','ad','d0','no'].forEach(k=>{if(!$('ec-'+k).value.trim())delete c[k];});
+  commit();Modal.close();const cb=CH_CB;CH_CB=null;if(cb)cb(c.id);else{if(!id)S.chId=c.id;render();toast(id?'Chantier modifié ✓':'Chantier créé ✓');}
+}
+function delCh(id){ask('Supprimer ce chantier ?','Il n\'a aucun mouvement, il sera simplement retiré de la liste.','Supprimer',()=>{const c=CH[id];c.del=true;c.up=Date.now();S.chId=null;commit();render();},true);}
+
+/* =================== PLUS =================== */
+const dayOf=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const VIEWS={hist:histHTML,inv:invHTML,alerts:alertsHTML,thr:thrHTML,locs:locsHTML,items:itemsHTML,backup:backupHTML,security:secHTML,export:exportHTML,settings:settingsHTML,help:helpHTML};
+function plusHTML(){
+  const v=S.view;if(v&&VIEWS[v])return `<button class="back" onclick="S.view=${v==='thr'?"'alerts'":'null'};render()">← ${v==='thr'?'Alertes':'Plus'}</button>`+VIEWS[v]();
+  const nA=alertItems().length,nItems=DB.items.filter(i=>!i.del&&!i.hid).length;
+  const mi=(id,e,t,s,warn)=>`<div class="mi" onclick="S.view='${id}';render();scrollTo(0,0)"><span class="e">${e}</span><div class="grow"><b>${t}</b>${s?`<div class="sub"${warn?' style="color:var(--warn)"':''}>${s}</div>`:''}</div><span style="color:var(--faint)">›</span></div>`;
+  return `<h1>Plus</h1>
+  <div class="card menu" style="padding:0;margin-top:14px">
+   ${mi('hist','📜','Historique des mouvements',DB.moves.length?GROUPS.length+' opération(s) enregistrée(s)':'Aucun mouvement')}
+   ${mi('inv','📋','Inventaire','Compter et corriger le stock réel')}
+   ${mi('alerts','⚠️','Alertes & liste de commande',nA?nA+' article(s) sous le seuil':"Seuils d'alerte, liste à commander",nA)}
+   ${mi('locs','📍','Emplacements',activeLocs().map(l=>esc(l.n)).join(', '))}
+   ${mi('items','🗂️','Articles & catalogue',nItems+' articles visibles')}</div>
+  <div class="card menu" style="padding:0">
+   ${mi('backup','💾','Sauvegarde & autres appareils','Dernière sauvegarde : '+ago(CFG.lastBk),needBk())}
+   ${mi('security','🔒','Sécurité','Code, verrouillage auto, clé de secours')}
+   ${mi('export','🖨️','Imprimer & exporter','État du stock, fichier Excel')}
+   ${mi('settings','⚙️','Réglages','Entreprise, apparence, installation')}
+   ${mi('help','❓',"Mode d'emploi",'')}</div>
+  <button class="btn sec" onclick="lock()">${IC.lock} Verrouiller maintenant</button>
+  <p class="sub" style="text-align:center;margin-top:14px">Stock Chantier v1 · données chiffrées sur cet appareil</p>`;
+}
+
+/* ---------- historique ---------- */
+function gText(G){return [whereTxt(G),G.sup,G.ref,G.no,...G.lines.map(m=>ITEM[m.i]?.n)].join(' ');}
+function histList(){
+  const f=S.hf,q=norm(S.hq||'');let G=GROUPS;
+  if(f!=='all')G=G.filter(g=>f==='in'?(g.t==='in'||g.t==='dir'):g.t===f);
+  if(q)G=G.filter(g=>q.split(/\s+/).every(t=>norm(gText(g)).includes(t)));
+  if(!G.length)return '<div class="empty"><div class="e">📭</div>Aucun mouvement.</div>';
+  let out='',lastD='';
+  G.slice(0,S.hlim).forEach(g=>{if(g.d!==lastD){out+=`<div class="grp"><span>${fmtDateLong(g.d)}</span></div>`;lastD=g.d;}out+=groupHTML(g,true);});
+  return out+(G.length>S.hlim?`<button class="btn sec" onclick="S.hlim+=40;$('hist-list').innerHTML=histList()">Afficher plus</button>`:'');
+}
+function histHTML(){
+  return `<h1>Historique</h1><div class="sub">Tout ce qui est entré et sorti. Une erreur ? « Annuler » remet les quantités comme avant.</div>
+  <div class="search" style="margin-top:12px"><span class="ic">${IC.search}</span><input placeholder="Article, chantier, fournisseur, n° de bon…" value="${esc(S.hq)}" oninput="S.hq=this.value;S.hlim=40;$('hist-list').innerHTML=histList()"></div>
+  <div class="chips">${[['all','Tout'],['in','Entrées'],['out','Sorties chantier'],['ret','Retours'],['tr','Transferts'],['loss','Pertes'],['adj','Inventaires']].map(([k,n])=>`<button class="chip ${S.hf===k?'on':''}" onclick="S.hf='${k}';S.hlim=40;render()">${n}</button>`).join('')}</div>
+  <div id="hist-list">${histList()}</div>`;
+}
+
+/* ---------- inventaire ---------- */
+function invIds(){const I=S.inv;const ids=DB.items.filter(it=>!it.del&&(!I.cat||it.c===I.cat)&&qAt(it.id,I.loc)!==0).map(it=>it.id);
+  I.extra.forEach(id=>{if(!ids.includes(id))ids.push(id);});return ids;}
+function invHTML(){
+  const I=S.inv||(S.inv={loc:defLoc(),cat:'',counts:{},extra:[]});if(!LOC[I.loc])I.loc=defLoc();
+  const ids=invIds();const done=Object.keys(I.counts).filter(id=>!isNaN(parseQ(I.counts[id]))).length;
+  return `<h1>Inventaire</h1><p class="muted" style="margin-top:4px">Comptez ce qui est <b>réellement</b> présent et saisissez la quantité. Seules les lignes remplies sont corrigées ; les autres ne bougent pas.</p>
+  <div class="grid2"><div>${locSelect('S.inv.loc',I.loc,'Emplacement compté').replace('render()',"S.inv.counts={};S.inv.extra=[];render()")}</div>
+  <div><label>Catégorie</label><select onchange="S.inv.cat=this.value;render()"><option value="">Toutes</option>${CATS.map(c=>`<option value="${c.id}" ${I.cat===c.id?'selected':''}>${c.e} ${esc(c.n)}</option>`).join('')}</select></div></div>
+  <div class="card" style="padding:4px 14px;margin-top:14px">${ids.length?ids.map(id=>{const it=ITEM[id],th=qAt(id,I.loc);const v=I.counts[id]??'';
+    return `<div class="line" style="grid-template-columns:1fr 104px"><div style="min-width:0"><div style="font-weight:600;font-size:.9rem">${esc(it.n)}</div><div class="sub">Prévu : ${fmtQU(th,it.u)} <span id="invd-${id}">${invDiff(id,v)}</span></div></div>
+    <input inputmode="decimal" placeholder="${fmtQ(th)}" value="${esc(v)}" oninput="invSet('${id}',this.value)"></div>`;}).join(''):`<p class="muted" style="padding:12px 0">Aucun article en stock ici${I.cat?' dans cette catégorie':''}. Ajoutez ce que vous trouvez avec le bouton ci-dessous.</p>`}</div>
+  <button class="btn sec" onclick="pickItem(id=>{if(!S.inv.extra.includes(id))S.inv.extra.push(id);render();},'Ajouter un article trouvé')">＋ Ajouter un article trouvé sur place</button>
+  <button class="btn" onclick="submitInv()">Valider l'inventaire${done?` (${done} compté${done>1?'s':''})`:''}</button>`;
+}
+function invDiff(id,v){const q=parseQ(v);if(isNaN(q))return '';const d=r3(q-qAt(id,S.inv.loc));if(d===0)return '<b style="color:var(--ok)">✓ juste</b>';return `<b style="color:var(--${d>0?'ok':'bad'})">écart ${d>0?'+':'−'}${fmtQ(Math.abs(d))}</b>`;}
+function invSet(id,v){S.inv.counts[id]=v;const e=$('invd-'+id);if(e)e.innerHTML=invDiff(id,v);}
+function submitInv(){
+  const I=S.inv;const g=uid(),ts=Date.now();let n=0,c=0;
+  for(const id in I.counts){const v=parseQ(I.counts[id]);if(isNaN(v))continue;if(v<0)return toast('Quantité négative impossible');c++;const d=r3(v-qAt(id,I.loc));
+    if(d!==0){DB.moves.push({id:uid(),g,ts,d:today(),t:'adj',i:id,q:d,to:I.loc,no:'Inventaire',up:ts});n++;}}
+  if(!c)return toast("Saisissez au moins une quantité comptée");
+  if(n)commit();S.inv=null;render();scrollTo(0,0);
+  toast(n?`Inventaire enregistré · ${n} écart(s) corrigé(s)`:`Inventaire : ${c} article(s) vérifié(s), tout est juste ✓`,n?'Annuler':null,n?()=>undoGroup(g):null);
+}
+
+/* ---------- alertes & seuils ---------- */
+function orderText(){const co=DB.cfg.company;const A=alertItems();
+  return `À commander${co?' — '+co:''} (${fmtDateLong(today())}) :\n`+A.map(it=>`• ${it.n} : reste ${fmtQU(qTot(it.id),it.u)} (seuil ${fmtQU(it.min,it.u)})`).join('\n');}
+function shareOrder(){const t=orderText();if(navigator.share)navigator.share({title:'À commander',text:t}).catch(()=>{});else copyTxt(t);}
+function alertsHTML(){
+  const A=alertItems(),N=negItems(),nMin=DB.items.filter(i=>!i.del&&i.min>0).length;
+  return `<h1>Alertes & commande</h1>
+  ${A.length?`<div class="card" style="padding:2px 14px;margin-top:14px">${A.map(it=>{const q=qTot(it.id);return `<div class="kv" style="cursor:pointer" onclick="openItem('${it.id}')"><span>${esc(it.n)}<br><span class="sub">seuil ${fmtQU(it.min,it.u)}</span></span><span style="text-align:right"><b style="color:var(--${q<=0?'bad':'warn'})">${fmtQU(q,it.u)}</b><br>${pill(stat(it))}</span></div>`;}).join('')}</div>
+    <div class="btns"><button class="btn" onclick="shareOrder()">📤 Envoyer la liste</button><button class="btn sec" onclick="printOrder()">🖨️ Imprimer</button></div>`
+  :`<div class="empty"><div class="e">✅</div>${nMin?"Aucun article sous son seuil d'alerte.":"Aucun seuil d'alerte défini pour l'instant."}</div>`}
+  ${N.length?`<h2>Stocks négatifs à vérifier</h2><p class="muted">Plus de sorties que d'entrées enregistrées : un achat a sans doute été oublié. Corrigez avec « ✎ Corriger » ou un inventaire.</p>${N.map(it=>itemRow(it,'')).join('')}`:''}
+  <h2>Seuils d'alerte</h2><p class="muted">Pour chaque article important, indiquez la quantité minimale : en dessous, il apparaît ici et sur l'accueil.</p>
+  <button class="btn sec" onclick="S.view='thr';render();scrollTo(0,0)">Régler les seuils (${nMin} défini${nMin>1?'s':''})</button>`;
+}
+function thrHTML(){
+  const ids=DB.items.filter(it=>!it.del&&(it.min>0||qTot(it.id)!==0||(S.thrExtra||[]).includes(it.id))).map(it=>it.id);
+  return `<h1>Seuils d'alerte</h1><p class="muted" style="margin-top:4px">Articles en stock ou déjà suivis. Laissez vide pour ne pas être alerté. Enregistré automatiquement.</p>
+  <div class="card" style="padding:4px 14px;margin-top:12px">${ids.length?ids.map(id=>{const it=ITEM[id];return `<div class="line" style="grid-template-columns:1fr 96px"><div style="min-width:0"><div style="font-weight:600;font-size:.9rem">${esc(it.n)}</div><div class="sub">Stock : ${fmtQU(qTot(id),it.u)} · seuil en ${uLab(it.u,2)}</div></div><input inputmode="decimal" placeholder="—" value="${it.min?fmtQ(it.min):''}" onchange="setMin('${id}',this.value)"></div>`;}).join(''):'<p class="muted" style="padding:12px 0">Aucun article en stock pour l\'instant.</p>'}</div>
+  <button class="btn sec" onclick="pickItem(id=>{S.thrExtra=S.thrExtra||[];S.thrExtra.push(id);render();},'Ajouter un article')">＋ Autre article</button>`;
+}
+function setMin(id,v){const it=ITEM[id];const q=parseQ(v);it.min=isNaN(q)||q<0?0:q;it.up=Date.now();commit();renderNav();toast('Seuil enregistré ✓');}
+
+/* ---------- emplacements ---------- */
+function locsHTML(){
+  const L=DB.locs.filter(l=>!l.del);const act=L.filter(l=>!l.arch),arc=L.filter(l=>l.arch);
+  const n=id=>Object.keys(STOCK).filter(i=>qAt(i,id)>0).length;
+  return `<h1>Emplacements</h1><p class="muted" style="margin-top:4px">Dépôt, camions, garage, stock laissé sur un chantier… Le stock est suivi séparément pour chaque lieu.</p>
+  <div style="margin-top:12px">${act.map(l=>`<div class="item" onclick="editLoc('${l.id}')"><span style="font-size:1.5rem">${LT[l.ty]?.[1]||'📦'}</span><div class="grow"><div class="nm">${esc(l.n)}</div><div class="sub">${LT[l.ty]?.[0]||''} · ${n(l.id)} article(s) en stock</div></div>
+   <button class="btn sec sm" onclick="event.stopPropagation();S.tab='stock';S.loc='${l.id}';S.only=true;S.q='';S.cat=null;render();scrollTo(0,0)">Voir</button></div>`).join('')}</div>
+  <button class="btn" onclick="editLoc(null)">＋ Ajouter un emplacement</button>
+  ${arc.length?`<h2>Archivés</h2>${arc.map(l=>`<div class="item" style="opacity:.6" onclick="editLoc('${l.id}')"><span style="font-size:1.5rem">${LT[l.ty]?.[1]||'📦'}</span><div class="grow"><div class="nm">${esc(l.n)}</div><div class="sub">Archivé</div></div></div>`).join('')}`:''}`;
+}
+function editLoc(id){
+  const l=id?LOC[id]:{n:'',ty:'camion'};const has=id&&Object.keys(STOCK).some(i=>qAt(i,id)!==0);
+  Modal.open(`<h2 style="margin-top:0">${id?"Modifier l'emplacement":'Nouvel emplacement'}</h2>
+  <label>Nom</label><input id="el-n" value="${esc(l.n)}" placeholder="Ex. Camion 2, Garage, Chantier Dupont">
+  <label>Type</label><select id="el-t">${Object.entries(LT).map(([k,v])=>`<option value="${k}" ${l.ty===k?'selected':''}>${v[1]} ${v[0]}</option>`).join('')}</select>
+  ${id?(l.arch?`<button class="btn sec" onclick="archLoc('${id}',false)">Réactiver</button>`:`<button class="btn sec" ${has?'disabled':''} onclick="archLoc('${id}',true)">Archiver (ne plus utiliser)</button>${has?'<div class="sub" style="margin-top:6px">Il reste du stock ici : transférez-le ou corrigez-le avant d\'archiver.</div>':''}`):''}
+  <div class="btns" style="margin-top:16px"><button class="btn sec" onclick="Modal.close()">Annuler</button><button class="btn" onclick="saveLoc(${id?`'${id}'`:'null'})">Enregistrer</button></div>`);
+  if(!id)setTimeout(()=>$('el-n')&&$('el-n').focus(),60);
+}
+function saveLoc(id){const n=$('el-n').value.trim();if(!n)return toast("Donnez un nom à l'emplacement");
+  let l;if(id)l=LOC[id];else{l={id:uid()};DB.locs.push(l);}Object.assign(l,{n,ty:$('el-t').value,up:Date.now()});commit();Modal.close();render();toast('Enregistré ✓');}
+function archLoc(id,a){if(a&&activeLocs().length<=1)return toast('Gardez au moins un emplacement actif');const l=LOC[id];l.arch=a;l.up=Date.now();
+  if(a&&S.loc===id)S.loc='all';commit();Modal.close();render();toast(a?'Emplacement archivé':'Emplacement réactivé');}
+
+/* ---------- catalogue ---------- */
+let ICSUBS=[];
+function itemsHTML(){
+  if(S.icat&&CAT[S.icat])return itemsCatHTML();
+  const all=DB.items.filter(i=>!i.del),nh=all.filter(i=>i.hid).length,nu=all.filter(i=>i.id[0]==='u').length;
+  return `<h1>Articles & catalogue</h1><p class="muted" style="margin-top:4px">${all.length} articles dont ${nu} créé(s) par vous${nh?`, ${nh} masqué(s)`:''}. Masquez ce que vous n'utilisez jamais (ex. ardoises) pour une recherche plus rapide.</p>
+  <button class="btn" onclick="editItem(null)">＋ Créer un article</button>
+  <div class="cats" style="margin-top:14px">${CATS.map(c=>{const its=all.filter(i=>i.c===c.id),h=its.filter(i=>i.hid).length;return `<div class="cat" onclick="S.icat='${c.id}';render();scrollTo(0,0)"><span class="e">${c.e}</span><div><b>${esc(c.n)}</b><div class="sub">${its.length} articles${h?' · '+h+' masqués':''}</div></div></div>`;}).join('')}</div>`;
+}
+function itemsCatHTML(){
+  const c=CAT[S.icat];ICSUBS=subsOf(c.id);
+  return `<button class="back" style="margin-top:-6px" onclick="S.icat=null;render()">← Catalogue</button><h1>${c.e} ${esc(c.n)}</h1>
+  <button class="btn sec" onclick="editItem(null,{c:'${c.id}'})">＋ Ajouter un article ici</button>
+  ${ICSUBS.map((s,si)=>{const its=DB.items.filter(i=>!i.del&&i.c===c.id&&i.s===s);if(!its.length)return '';const allHid=its.every(i=>i.hid);
+   return `<div class="grp"><span>${esc(s)}</span><a href="#" style="color:var(--acc);text-transform:none;letter-spacing:0" onclick="event.preventDefault();hideSub(${si},${!allHid})">${allHid?'Tout afficher':'Tout masquer'}</a></div>
+   <div class="card" style="padding:0 14px">${its.map(it=>{const q=qTot(it.id);return `<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line);${it.hid?'opacity:.45':''}"><div class="grow" style="cursor:pointer" onclick="editItem('${it.id}')"><div style="font-weight:600;font-size:.9rem">${esc(it.n)}</div><div class="sub">${UNITS[it.u]?.[2]||esc(it.u)}${it.min?' · seuil '+fmtQ(it.min):''}${q?' · stock '+fmtQ(q):''}</div></div><button class="btn ghost sm" onclick="toggleHide('${it.id}')">${it.hid?'Afficher':'Masquer'}</button></div>`;}).join('')}</div>`;}).join('')}`;
+}
+function hideSub(si,hide){const s=ICSUBS[si];const now=Date.now();DB.items.forEach(i=>{if(!i.del&&i.c===S.icat&&i.s===s&&!!i.hid!==hide){i.hid=hide;i.up=now;}});commit();render();toast(hide?'Sous-catégorie masquée':'Sous-catégorie affichée');}
+
+/* ---------- sauvegarde / import ---------- */
+function canShareFiles(){try{return !!(navigator.canShare&&navigator.share&&navigator.canShare({files:[new File(['x'],'x.json',{type:'application/json'})]}));}catch(e){return false;}}
+function backupHTML(){
+  const ok=!needBk()&&CFG.lastBk;const since=DB.moves.filter(m=>m.ts>CFG.lastBk).length;const prevT=+localStorage.getItem(KEY_PREVT)||0;const can=canShareFiles();
+  return `<h1>Sauvegarde</h1>
+  <div class="card" style="margin-top:14px"><div class="row"><span style="font-size:1.7rem">${ok?'✅':'⚠️'}</span><div class="grow"><b>${CFG.lastBk?'Dernière sauvegarde : '+ago(CFG.lastBk):"Aucune sauvegarde pour l'instant"}</b><div class="sub">${CFG.lastBk?since+' mouvement(s) depuis':'Faites-en une maintenant'}</div></div></div>
+  ${can?`<button class="btn" onclick="exportBackup(true)">📤 Envoyer la sauvegarde (mail, Drive, WhatsApp…)</button><button class="btn sec" onclick="exportBackup(false)">⬇️ Enregistrer le fichier</button>`:`<button class="btn" onclick="exportBackup(false)">⬇️ Télécharger la sauvegarde</button>`}</div>
+  <div class="card"><h3>Récupérer / synchroniser</h3><p class="muted" style="margin:6px 0 2px">Importez un fichier de sauvegarde venant d'un autre appareil (ou d'avant une perte). Vous choisirez ensuite de <b>fusionner</b> ou de <b>remplacer</b>.</p>
+  <button class="btn sec" onclick="pickFile('import')">📥 Importer une sauvegarde</button></div>
+  <div class="card"><h3>Téléphone ⇄ ordinateur</h3><ol class="steps"><li>Sur l'appareil où vous avez fait les derniers changements : <b>Envoyer la sauvegarde</b> (par mail à vous-même, par exemple).</li><li>Sur l'autre appareil : <b>Importer</b> ce fichier puis <b>Fusionner</b>.</li><li>Les deux appareils ont alors le même stock. Faites-le dès que vous changez d'appareil.</li></ol></div>
+  <div class="card"><h3>🔐 Pourquoi c'est sûr</h3><p class="muted" style="margin-top:6px">Le fichier de sauvegarde est <b>chiffré</b> : sans votre code (ou votre clé de secours), il est illisible. Vous pouvez le garder sans risque dans vos mails, Google Drive ou iCloud.</p><p class="muted" style="margin-top:6px">Conseil : une sauvegarde par semaine, et toujours avant de changer de téléphone.</p></div>
+  ${prevT?`<div class="card"><h3>Copie automatique</h3><p class="muted" style="margin:6px 0 2px">L'appli garde aussi une copie de secours sur cet appareil (${new Date(prevT).toLocaleString('fr-FR',{dateStyle:'medium',timeStyle:'short'})}). Utile en cas de grosse erreur.</p><button class="btn sec" onclick="restorePrev()">Revenir à cette copie</button></div>`:''}`;
+}
+function exportBackup(share){
+  const raw=localStorage.getItem(KEY);if(!raw)return toast('Rien à sauvegarder');
+  const env=JSON.parse(raw);env.exp={at:Date.now()};const txt=JSON.stringify(env);
+  const d=new Date();const name=`stock-sauvegarde-${today()}-${pad(d.getHours())}h${pad(d.getMinutes())}.json`;
+  if(share){const file=new File([txt],name,{type:'application/json'});
+    navigator.share({files:[file],title:'Sauvegarde Stock Chantier'}).then(markBk).catch(e=>{if(e&&e.name!=='AbortError')toast('Partage impossible — utilisez « Enregistrer le fichier »');});return;}
+  download(name,txt,'application/json');markBk();
+}
+function markBk(){CFG.lastBk=Date.now();CFG.bkMod=DB.mod||Date.now();saveCfg();toast('Sauvegarde créée ✓');render();}
+let FILE_MODE=null,IMP=null;
+function pickFile(mode){FILE_MODE=mode;const f=$('file-in');f.value='';f.click();}
+async function onFile(e){
+  const file=e.target.files[0];if(!file)return;let env;
+  try{env=JSON.parse(await file.text());}catch(err){return toast('Fichier illisible');}
+  if(!env||env.app!=='stockchantier'||!env.kp||!env.d)return toast("Ce fichier n'est pas une sauvegarde Stock Chantier");
+  IMP={env};
+  Modal.open(`<h2 style="margin-top:0">Ouvrir la sauvegarde</h2><p class="muted">Sauvegarde du <b>${new Date(env.exp?.at||env.at||Date.now()).toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short'})}</b>.<br>Entrez le code utilisé sur l'appareil qui l'a créée (ou votre clé de secours).</p>
+  <form onsubmit="event.preventDefault();openImport()"><input id="imp-code" class="pin" type="password" autocomplete="off" placeholder="Code ou clé de secours" style="margin-top:12px">
+  <div id="imp-msg" class="sub" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
+  <div class="btns"><button type="button" class="btn sec" onclick="Modal.close()">Annuler</button><button class="btn" id="imp-btn">Ouvrir</button></div></form>`);
+  setTimeout(()=>$('imp-code')&&$('imp-code').focus(),60);
+}
+async function openImport(){
+  if(throttled('imp-msg'))return;const code=$('imp-code').value;if(!code)return;busy('imp-btn',true,'Ouverture…');
+  let r;try{r=await openEnv(IMP.env,code);}catch(e){const a=attFail();busy('imp-btn',false,'Ouvrir');lkMsg('imp-msg',failMsg(a));return;}
+  let db;try{db=migrate(await decryptData(IMP.env,r.dek));}catch(e){busy('imp-btn',false,'Ouvrir');lkMsg('imp-msg','Fichier endommagé : '+e.message);return;}
+  attReset();IMP.dek=r.dek;IMP.db=db;
+  if(FILE_MODE==='restore'||!DB){
+    const env=Object.assign({},IMP.env);delete env.exp;
+    if(r.viaRec){env.kp=null;} // le code d'origine n'est pas connu : on en demandera un nouveau
+    ENV=env;DEK=r.dek;DB=db;rebuild();Modal.close();
+    if(r.viaRec){S.lk='newcode';render();openImportNewCode();return;}
+    await save();persist();CFG.lastBk=Date.now();CFG.bkMod=DB.mod;saveCfg();S.lk=null;S.tab='stock';lastAct=Date.now();render();toast('Sauvegarde restaurée ✓');return;
+  }
+  const cnt=d=>({m:d.moves.filter(x=>!x.del).length,c:d.ch.filter(x=>!x.del).length,a:d.items.filter(x=>x.id[0]==='u'&&!x.del).length});
+  const A=cnt(DB),B=cnt(db);
+  Modal.open(`<h2 style="margin-top:0">Que faire de cette sauvegarde ?</h2>
+  <div class="card flat" style="padding:2px 14px"><div class="kv"><span></span><span class="sub"><b>Cet appareil</b> · <b>Sauvegarde</b></span></div>
+   <div class="kv"><span>Mouvements</span><b>${A.m} · ${B.m}</b></div><div class="kv"><span>Chantiers</span><b>${A.c} · ${B.c}</b></div><div class="kv"><span>Articles créés</span><b>${A.a} · ${B.a}</b></div></div>
+  <button class="btn" onclick="applyImport('merge')">Fusionner (recommandé)</button><p class="sub" style="margin-top:6px">Ajoute tout ce qui manque des deux côtés, sans rien perdre. Idéal entre téléphone et ordinateur.</p>
+  <button class="btn sec" onclick="applyImport('replace')">Remplacer mes données par la sauvegarde</button><p class="sub" style="margin-top:6px">Tout ce qui est sur cet appareil est remplacé (une copie de secours est gardée).</p>
+  <button class="btn ghost" onclick="IMP=null;Modal.close()">Annuler</button>`);
+}
+function openImportNewCode(){Modal.open(`<h2 style="margin-top:0">Choisissez votre code</h2><p class="muted">Vous avez ouvert la sauvegarde avec la clé de secours. Choisissez le code qui protégera cet appareil.</p>
+  <input id="nc-1" class="pin" type="password" autocomplete="new-password" placeholder="Nouveau code" style="margin-top:10px"><input id="nc-2" class="pin" type="password" autocomplete="new-password" placeholder="Confirmer" style="margin-top:8px">
+  <div id="nc-msg" class="sub" style="color:var(--bad);min-height:20px;margin-top:8px"></div><button class="btn" id="nc-btn" onclick="setNewCode()">Enregistrer</button>`);}
+async function setNewCode(){const p1=$('nc-1').value,p2=$('nc-2').value;const pb=codeProblem(p1);if(pb)return lkMsg('nc-msg',pb);if(p1!==p2)return lkMsg('nc-msg','Les deux codes ne sont pas identiques.');
+  busy('nc-btn',true,'Chiffrement…');ENV.kp=await wrapWith(DEK,p1,PIN_ITER);ENV.num=/^\d+$/.test(p1);await save();persist();CFG.lastBk=Date.now();CFG.bkMod=DB.mod;saveCfg();
+  Modal.close();S.lk=null;S.tab='stock';lastAct=Date.now();render();toast('Sauvegarde restaurée ✓');}
+async function applyImport(mode){
+  if(!IMP||!IMP.db)return;const cur=localStorage.getItem(KEY);
+  try{localStorage.setItem(KEY_PREV,cur);localStorage.setItem(KEY_PREVT,String(Date.now()));}catch(e){}
+  DB=mode==='merge'?mergeDB(DB,IMP.db):IMP.db;IMP=null;await commit();
+  CFG.lastBk=Date.now();CFG.bkMod=DB.mod;saveCfg();Modal.close();render();toast(mode==='merge'?'Données fusionnées ✓':'Données remplacées ✓');
+}
+function restorePrev(){
+  ask('Revenir à la copie automatique ?','Les changements faits depuis cette copie seront perdus (sauf s\'ils sont dans une sauvegarde).','Revenir à la copie',async()=>{
+    try{const p=JSON.parse(localStorage.getItem(KEY_PREV));const db=migrate(await decryptData(p,DEK));DB=db;await commit();render();toast('Copie restaurée ✓');}
+    catch(e){toast('Copie illisible : '+e.message);}},true);
+}
+
+/* ---------- sécurité ---------- */
+function secHTML(){
+  return `<h1>Sécurité</h1>
+  <div class="card" style="margin-top:14px"><h3>Verrouillage automatique</h3><p class="muted" style="margin:4px 0 8px">L'appli se verrouille seule si vous ne l'utilisez pas.</p>
+   <select onchange="CFG.lockMin=+this.value;saveCfg();toast('Enregistré ✓')">${[1,2,5,10,15,30].map(m=>`<option value="${m}" ${CFG.lockMin===m?'selected':''}>Après ${m} minute${m>1?'s':''}</option>`).join('')}</select></div>
+  <div class="card"><h3>Code d'accès</h3><button class="btn sec" onclick="changeCode()">Changer mon code</button></div>
+  <div class="card"><h3>Clé de secours</h3><p class="muted" style="margin-top:4px">Elle permet de récupérer vos données si vous oubliez votre code. Perdue ? Créez-en une nouvelle (l'ancienne ne marchera plus sur cet appareil, mais reste valable pour les anciennes sauvegardes).</p><button class="btn sec" onclick="newRecKey()">Créer une nouvelle clé de secours</button></div>
+  <div class="card"><h3>🛡️ Protection en place</h3><ul class="muted" style="padding-left:18px;margin-top:6px;line-height:1.6">
+   <li>Données chiffrées (AES-256) avec une clé que seul votre code peut ouvrir.</li>
+   <li>Rien n'est envoyé sur Internet : tout reste sur l'appareil.</li>
+   <li>Après 5 codes faux, les essais sont bloqués de plus en plus longtemps.</li>
+   <li>Stockage ${CFG.persist?'<b>protégé contre l\'effacement automatique</b> ✓':'standard : installez l\'appli sur l\'écran d\'accueil pour le protéger'}.</li></ul></div>
+  <div class="card" style="border-color:var(--bad)"><h3 style="color:var(--bad)">Zone sensible</h3><p class="muted" style="margin:4px 0 4px">Efface définitivement toutes les données de cet appareil (avant de vendre ou donner l'appareil). Faites une sauvegarde avant !</p><button class="btn danger" onclick="wipeAsk()">Effacer les données de cet appareil</button></div>`;
+}
+function changeCode(){
+  Modal.open(`<h2 style="margin-top:0">Changer mon code</h2>
+  <label>Code actuel</label><input id="cc-0" class="pin" type="password" autocomplete="current-password">
+  <label>Nouveau code (6 caractères min.)</label><input id="cc-1" class="pin" type="password" autocomplete="new-password">
+  <label>Confirmer le nouveau code</label><input id="cc-2" class="pin" type="password" autocomplete="new-password">
+  <div id="cc-msg" class="sub" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
+  <div class="btns"><button class="btn sec" onclick="Modal.close()">Annuler</button><button class="btn" id="cc-btn" onclick="doChangeCode()">Valider</button></div>`);
+}
+async function doChangeCode(){
+  if(throttled('cc-msg'))return;const o=$('cc-0').value,p1=$('cc-1').value,p2=$('cc-2').value;
+  const pb=codeProblem(p1);if(pb)return lkMsg('cc-msg',pb);if(p1!==p2)return lkMsg('cc-msg','Les deux nouveaux codes ne sont pas identiques.');
+  busy('cc-btn',true,'Vérification…');try{await unwrapWith(ENV.kp,o);}catch(e){const a=attFail();busy('cc-btn',false,'Valider');return lkMsg('cc-msg',failMsg(a));}
+  attReset();ENV.kp=await wrapWith(DEK,p1,PIN_ITER);ENV.num=/^\d+$/.test(p1);await save();Modal.close();
+  toast('Code modifié ✓ — les anciennes sauvegardes s\'ouvrent avec l\'ancien code',null,null,5000);
+}
+function newRecKey(){
+  Modal.open(`<h2 style="margin-top:0">Nouvelle clé de secours</h2><p class="muted">Confirmez avec votre code actuel.</p>
+  <input id="nr-0" class="pin" type="password" autocomplete="current-password" style="margin-top:10px">
+  <div id="nr-msg" class="sub" style="color:var(--bad);min-height:20px;margin-top:8px"></div>
+  <div class="btns"><button class="btn sec" onclick="Modal.close()">Annuler</button><button class="btn" id="nr-btn" onclick="doNewRec()">Créer</button></div>`);
+}
+async function doNewRec(){
+  if(throttled('nr-msg'))return;busy('nr-btn',true,'Vérification…');
+  try{await unwrapWith(ENV.kp,$('nr-0').value);}catch(e){const a=attFail();busy('nr-btn',false,'Créer');return lkMsg('nr-msg',failMsg(a));}
+  attReset();const rec=genRecovery();ENV.kr=await wrapWith(DEK,normRec(rec),REC_ITER);await save();
+  Modal.open(`<h2 style="margin-top:0">Votre nouvelle clé de secours</h2><p class="muted">Notez-la sur papier et rangez-la en lieu sûr. L'ancienne clé ne fonctionne plus sur cet appareil.</p>
+  <div class="code" style="margin-top:12px">${esc(rec)}</div><div class="btns" style="margin-top:10px"><button class="btn sec" onclick="copyTxt('${rec}')">Copier</button><button class="btn sec" onclick="printRec('${rec}')">Imprimer</button></div>
+  <button class="btn" onclick="Modal.close()">J'ai noté ma clé</button>`);
+}
+function wipeAsk(){
+  Modal.open(`<h2 style="margin-top:0;color:var(--bad)">Tout effacer ?</h2><p class="muted">Toutes les données de cet appareil seront <b>définitivement supprimées</b>. Seule une sauvegarde permettra de les retrouver.<br><br>Tapez <b>EFFACER</b> pour confirmer.</p>
+  <input id="wp" autocomplete="off" autocapitalize="characters" style="margin-top:10px">
+  <div class="btns" style="margin-top:14px"><button class="btn sec" onclick="Modal.close()">Annuler</button><button class="btn danger" onclick="if($('wp').value.trim().toUpperCase()!=='EFFACER')return toast('Tapez EFFACER pour confirmer');[KEY,KEY_PREV,KEY_PREVT,KEY_ATT,KEY_CFG].forEach(k=>localStorage.removeItem(k));location.reload()">Effacer</button></div>`);
+}
+
+/* ---------- impression & export ---------- */
+function doPrint(h){$('print').innerHTML=h;setTimeout(()=>window.print(),60);}
+addEventListener('afterprint',()=>{$('print').innerHTML='';});
+const prHead=t=>`<h1>${esc(t)}${DB.cfg.company?' — '+esc(DB.cfg.company):''}</h1><div style="color:#555">Édité le ${new Date().toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short'})}</div>`;
+function printStock(loc){
+  const locs=loc==='all'?activeLocs():[LOC[loc]];const val=id=>loc==='all'?qTot(id):qAt(id,loc);
+  let h=prHead('État du stock'+(loc!=='all'?' · '+LOC[loc].n:''));
+  CATS.forEach(c=>{const its=DB.items.filter(it=>!it.del&&it.c===c.id&&val(it.id)!==0);if(!its.length)return;
+    h+=`<h2>${esc(c.n)}</h2><table><tr><th>Article</th>${loc==='all'&&locs.length>1?locs.map(l=>`<th class="num">${esc(l.n)}</th>`).join(''):''}<th class="num">Total</th><th>Unité</th></tr>${its.map(it=>`<tr><td>${esc(it.n)}</td>${loc==='all'&&locs.length>1?locs.map(l=>`<td class="num">${qAt(it.id,l.id)?fmtQ(qAt(it.id,l.id)):''}</td>`).join(''):''}<td class="num"><b>${fmtQ(val(it.id))}</b></td><td>${uLab(it.u,2)}</td></tr>`).join('')}</table>`;});
+  doPrint(h);
+}
+function printCh(id){
+  const c=CH[id],u=chUse(id);const ids=Object.keys(u).filter(i=>u[i]!==0&&ITEM[i]);
+  let h=prHead('Chantier : '+c.n)+`<p>${[c.cl&&'Client : '+esc(c.cl),c.ad&&'Adresse : '+esc(c.ad),c.d0&&'Début : '+fmtDateLong(c.d0),c.st==='done'&&c.d1&&'Fin : '+fmtDateLong(c.d1)].filter(Boolean).join('<br>')}</p>`;
+  h+=`<h2>Matériel utilisé (net)</h2><table><tr><th>Catégorie</th><th>Article</th><th class="num">Quantité</th><th>Unité</th></tr>${ids.sort((a,b)=>(ITEM[a].c+ITEM[a].n).localeCompare(ITEM[b].c+ITEM[b].n)).map(i=>`<tr><td>${esc(CAT[ITEM[i].c]?.n||'')}</td><td>${esc(ITEM[i].n)}</td><td class="num"><b>${fmtQ(u[i])}</b></td><td>${uLab(ITEM[i].u,u[i])}</td></tr>`).join('')}</table>`;
+  const ms=DB.moves.filter(m=>m.ch===id&&!m.del).sort((a,b)=>(a.d||'').localeCompare(b.d||'')||a.ts-b.ts);
+  h+=`<h2>Détail des mouvements</h2><table><tr><th>Date</th><th>Type</th><th>Article</th><th class="num">Qté</th><th>Note</th></tr>${ms.map(m=>`<tr><td>${esc(m.d)}</td><td>${MT[m.t][0]}</td><td>${esc(ITEM[m.i]?.n||'')}</td><td class="num">${sign(m.t,m.q)}${fmtQ(m.q)}</td><td>${esc([m.sup,m.ref&&'BL '+m.ref,m.no].filter(Boolean).join(' · '))}</td></tr>`).join('')}</table>`;
+  doPrint(h);
+}
+function printOrder(){doPrint(prHead('Liste à commander')+`<table><tr><th>Article</th><th class="num">Reste</th><th class="num">Seuil</th><th>Unité</th></tr>${alertItems().map(it=>`<tr><td>${esc(it.n)}</td><td class="num">${fmtQ(qTot(it.id))}</td><td class="num">${fmtQ(it.min)}</td><td>${uLab(it.u,2)}</td></tr>`).join('')}</table>`);}
+function printRec(k){doPrint(`<h1>Stock Chantier — clé de secours</h1><p>Créée le ${new Date().toLocaleDateString('fr-FR',{dateStyle:'long'})}. À conserver en lieu sûr, hors du téléphone.</p><p style="font:700 20pt monospace;letter-spacing:2px;border:2px dashed #000;padding:14px;text-align:center">${esc(k)}</p><p>Elle permet de récupérer les données si le code est oublié (écran de verrouillage › « Code oublié ? »).</p>`);}
+const csvCell=v=>{v=String(v??'');return /[";\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+const csvNum=q=>String(r3(q)).replace('.',',');
+const csv=rows=>'﻿'+rows.map(r=>r.map(csvCell).join(';')).join('\r\n');
+function csvStock(){const locs=activeLocs();const rows=[['Catégorie','Sous-catégorie','Article','Unité',...locs.map(l=>l.n),'Total','Seuil alerte']];
+  DB.items.filter(it=>!it.del&&(STOCK[it.id]||it.min)).forEach(it=>rows.push([CAT[it.c]?.n||'',it.s,it.n,UNITS[it.u]?.[0]||it.u,...locs.map(l=>csvNum(qAt(it.id,l.id))),csvNum(qTot(it.id)),it.min?csvNum(it.min):'']));
+  download(`stock-${today()}.csv`,csv(rows),'text/csv;charset=utf-8');toast('Fichier Excel créé ✓');}
+function csvMoves(){const rows=[['Date','Type','Article','Quantité','Unité','De','Vers','Chantier','Fournisseur','N° bon','Note','Annulé']];
+  DB.moves.slice().sort((a,b)=>(a.d||'').localeCompare(b.d||'')||a.ts-b.ts).forEach(m=>{const it=ITEM[m.i]||{};rows.push([m.d,MT[m.t][0],it.n||'',csvNum(m.t==='adj'?m.q:m.q),UNITS[it.u]?.[0]||'',LOC[m.fr]?.n||'',LOC[m.to]?.n||'',CH[m.ch]?.n||'',m.sup||'',m.ref||'',m.no||'',m.del?'oui':'']);});
+  download(`mouvements-${today()}.csv`,csv(rows),'text/csv;charset=utf-8');toast('Fichier Excel créé ✓');}
+function exportHTML(){
+  return `<h1>Imprimer & exporter</h1>
+  <div class="card" style="margin-top:14px"><h3>État du stock</h3><label>Emplacement</label><select id="ex-loc"><option value="all">Tous les emplacements</option>${activeLocs().map(l=>`<option value="${l.id}">${esc(l.n)}</option>`).join('')}</select>
+   <button class="btn" onclick="printStock($('ex-loc').value)">🖨️ Imprimer / PDF</button><button class="btn sec" onclick="csvStock()">📊 Exporter pour Excel (CSV)</button></div>
+  <div class="card"><h3>Historique des mouvements</h3><button class="btn sec" onclick="csvMoves()">📊 Exporter pour Excel (CSV)</button></div>
+  <div class="card"><h3>Par chantier</h3><p class="muted" style="margin-top:4px">Ouvrez un chantier puis « 🖨️ Récapitulatif » pour imprimer le matériel utilisé (utile pour la facturation).</p></div>
+  <div class="banner warn">⚠️<div>Les documents imprimés et les fichiers Excel ne sont <b>pas chiffrés</b>. Ne les laissez pas traîner.</div></div>`;
+}
+
+/* ---------- réglages & aide ---------- */
+function settingsHTML(){
+  return `<h1>Réglages</h1>
+  <div class="card" style="margin-top:14px"><label style="margin-top:0">Nom de l'entreprise</label><input value="${esc(DB.cfg.company||'')}" placeholder="Affiché sur les impressions" onchange="DB.cfg.company=this.value.trim();DB.cfg.up=Date.now();commit();renderNav();toast('Enregistré ✓')">
+   <label>Apparence</label><div class="seg" style="margin-bottom:0">${[['auto','Auto'],['light','Clair'],['dark','Sombre']].map(([v,n])=>`<button class="${CFG.theme===v?'on':''}" onclick="CFG.theme='${v}';saveCfg();applyTheme();render()">${n}</button>`).join('')}</div></div>
+  <div class="card"><h3>Installer l'appli</h3><ol class="steps"><li><b>iPhone</b> : ouvrir le lien dans Safari › bouton Partager › « Sur l'écran d'accueil ».</li><li><b>Android</b> : Chrome › menu ⋮ › « Ajouter à l'écran d'accueil » / « Installer l'application ».</li><li><b>Ordinateur</b> : Chrome ou Edge › icône d'installation à droite de la barre d'adresse.</li></ol>
+  <p class="sub">Ouvrez toujours l'appli depuis son icône : c'est là que sont vos données.</p></div>`;
+}
+function helpHTML(){
+  const sec=(t,b)=>`<div class="card"><h3>${t}</h3><div class="muted" style="margin-top:6px;line-height:1.6">${b}</div></div>`;
+  return `<h1>Mode d'emploi</h1><div style="margin-top:14px"></div>
+  ${sec('🔍 Savoir si j\'ai un article','Onglet <b>Stock</b> : tapez quelques lettres (« ciment 42 », « romane », « HA 10 », « 0/4 »). La quantité totale s\'affiche à droite, le détail par lieu en dessous. Touchez un article pour voir sa fiche, son historique et agir dessus.')}
+  ${sec('➕ J\'achète / je reçois','Onglet <b>Entrée</b> : choisissez où le matériel est rangé (dépôt, camion…), ajoutez les articles et les quantités, validez. Livré directement sur un chantier ? Choisissez « Direct sur chantier ».')}
+  ${sec('➖ J\'utilise du matériel','Onglet <b>Sortie</b> › « Pour un chantier » : choisissez le chantier et d\'où vient le matériel. Pour charger le camion depuis le dépôt : « Transfert ». Casse ou vol : « Perte / casse ».')}
+  ${sec('↩ Il reste du matériel','<b>Entrée</b> › « Retour de chantier » : le surplus revient dans le stock et est déduit du chantier.')}
+  ${sec('🏗️ Chantiers','Chaque chantier montre tout le matériel utilisé (sorties + livraisons − retours). « 🖨️ Récapitulatif » pour l\'imprimer ou le garder en PDF.')}
+  ${sec('📋 Le stock ne correspond pas','Plus › <b>Inventaire</b> : comptez et saisissez le réel, l\'appli corrige les écarts. Pour un seul article : sa fiche › « ✎ Corriger ».')}
+  ${sec('⚠️ Ne jamais manquer','Plus › Alertes › <b>Régler les seuils</b>. Les articles sous le seuil apparaissent sur l\'accueil, et la liste peut être envoyée au fournisseur.')}
+  ${sec('↶ Une erreur ?','Juste après une saisie, touchez « Annuler » dans le bandeau noir. Plus tard : Plus › Historique › « Annuler » sur le mouvement.')}
+  ${sec('🔐 Sécurité et sauvegardes','Tout est chiffré avec votre code. Sans code ni clé de secours, personne ne peut lire les données — pas même nous. <b>Faites une sauvegarde chaque semaine</b> (Plus › Sauvegarde) et envoyez-la-vous par mail : si le téléphone est perdu, volé ou cassé, vous récupérez tout.')}`;
+}
+
+/* =================== DÉMARRAGE =================== */
+let lastAct=Date.now();
+['pointerdown','keydown','touchstart','wheel'].forEach(ev=>addEventListener(ev,()=>{lastAct=Date.now();},{passive:true}));
+function idleCheck(){if(DB&&!S.lk&&Date.now()-lastAct>CFG.lockMin*60000)lock();}
+setInterval(idleCheck,10000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')idleCheck();});
+document.addEventListener('click',e=>{if(!e.target.closest('.picker'))document.querySelectorAll('.sugg').forEach(s=>s.style.display='none');});
+document.addEventListener('keydown',e=>{if(!DB||S.lk)return;
+  if(e.key==='Escape'&&$('modal').style.display==='flex'){Modal.close();return;}
+  const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'');
+  if((e.key==='/'&&!typing)||((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k')){e.preventDefault();if(S.tab!=='stock'){S.tab='stock';render();}const q=$('q');if(q){q.focus();q.select();}}});
+$('file-in').addEventListener('change',onFile);
+(function init(){
+  applyTheme();
+  if(!window.crypto||!crypto.subtle){$('app').innerHTML='<div class="lock"><h1>Connexion non sécurisée</h1><p class="muted" style="margin-top:8px">Ouvrez l\'application via son adresse <b>https://</b> pour que le chiffrement fonctionne.</p></div>';return;}
+  S.lk=readEnv()?'unlock':'welcome';render();
+})();
+
+</script>
+</body>
+</html>
